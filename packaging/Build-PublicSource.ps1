@@ -2,6 +2,8 @@ param([string]$Output = 'D:/CodexWork/Outputs/teacher-hobong-local-1.0.15-source
 $ErrorActionPreference = 'Stop'
 $root = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..'))
 $out = [IO.Path]::GetFullPath($Output)
+$licensesInRepo = Test-Path -LiteralPath (Join-Path $root 'licenses') -PathType Container
+$licenseDir = if ($licensesInRepo) { 'licenses' } else { 'school-dist/portable-0.1.15-4b/licenses' }
 if (Test-Path -LiteralPath $out) { throw "Source snapshot already exists: $out" }
 New-Item -ItemType Directory -Path $out | Out-Null
 
@@ -33,7 +35,7 @@ foreach ($spec in @(
     @{Path='desktop/src-tauri/icons';Filter='*'},
     @{Path='web';Filter='*.html'},
     @{Path='tests';Filter='*.py'},
-    @{Path='school-dist/portable-0.1.15-4b/licenses';Filter='*'}
+    @{Path=$licenseDir;Filter='*'}
 )) {
     foreach ($file in Get-ChildItem -LiteralPath (Join-Path $root $spec.Path) -File -Recurse -Filter $spec.Filter) {
         if ($file.FullName -match '[\\/](__pycache__|android|ios)[\\/]' -or
@@ -48,7 +50,7 @@ foreach ($spec in @(
 foreach ($rel in $files | Sort-Object -Unique) {
     if ($rel -match '(?i)(\.env|\.pfx|\.pem|\.key|\.exe|\.dll|\.pdf|\.hwp|\.wav|\.mp4|\.log)$' -or
         $rel -match '(?i)(credentials|real.samples|private|secret)') { throw "Refused source path: $rel" }
-    $sourceRel = if ($rel.StartsWith('licenses/')) {
+    $sourceRel = if ($rel.StartsWith('licenses/') -and !$licensesInRepo) {
         'school-dist/portable-0.1.15-4b/' + $rel
     } else { $rel }
     $source = Join-Path $root $sourceRel
