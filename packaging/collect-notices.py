@@ -16,6 +16,10 @@ parser.add_argument("--corresponding-source-url", help="Public URL for the match
 args = parser.parse_args()
 root = Path(__file__).resolve().parent.parent
 args.output.mkdir(parents=True, exist_ok=True)
+agpl_text = (root / "LICENSE").read_bytes()
+if not agpl_text.startswith(b"GNU AFFERO GENERAL PUBLIC LICENSE") or len(agpl_text) < 30000:
+    raise ValueError("Full AGPL-3.0 license text is missing from the source root")
+(args.output / "AGPL-3.0-only.txt").write_bytes(agpl_text)
 runtime = ["pymupdf", "rapidocr", "rapidfuzz", "onnxruntime", "opencv-python", "numpy", "pillow",
            "xlsxwriter", "reportlab", "requests", "urllib3", "idna", "certifi", "charset-normalizer",
            "omegaconf", "antlr4-python3-runtime", "pyyaml", "pyclipper", "shapely", "six", "tqdm",
@@ -37,6 +41,7 @@ def upstream_copy(url, target):
         target.write_bytes(content)
     return {"url": url, "sha256": hashlib.sha256(target.read_bytes()).hexdigest()}
 report = {"python": [], "rust": [], "corresponding_source_url": args.corresponding_source_url,
+          "agpl_license": {"file": "AGPL-3.0-only.txt", "sha256": hashlib.sha256(agpl_text).hexdigest()},
           "release_blockers": []}
 if not args.corresponding_source_url:
     report["release_blockers"].append(
