@@ -1,0 +1,44 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+.venv-*/
+
+# JavaScript / Tauri / Rust
+desktop/node_modules/
+desktop/src-tauri/target/
+desktop/src-tauri/binaries/*.exe
+target/
+
+# Build and packaging outputs
+build/
+dist/
+school-dist/
+tmp/
+*.spec.bak
+
+# Private or generated OCR material
+data/real_samples/
+data/out/
+HANDOVER.md
+.omo/
+
+# Local configuration and secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+credentials*.json
+
+# Removed legacy branding asset (kept out of every future commit)
+desktop/web/assets/banner.jpg
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

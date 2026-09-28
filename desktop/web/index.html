@@ -1,0 +1,2604 @@
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>기간제교원 호봉(재)획정 계산기 및 조서 자동작성기</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Malgun Gothic','맑은 고딕',sans-serif;background:#f3f4f6;color:#1f2937;min-height:100vh}
+
+  /* ── Header ── */
+  header{background:linear-gradient(135deg,#1a3a6b 0%,#2563b0 100%);color:#fff;padding:20px 24px;box-shadow:0 4px 12px rgba(0,0,0,.2)}
+  .header-inner{max-width:900px;margin:0 auto}
+  .header-tag{font-size:11px;letter-spacing:3px;color:#93c5fd;text-transform:uppercase;margin-bottom:4px}
+  header h1{font-size:22px;font-weight:900;letter-spacing:-0.5px}
+  header p{font-size:12px;color:#93c5fd;margin-top:4px}
+
+  /* ── Steps ── */
+  .steps-bar{background:#fff;border-bottom:1px solid #e5e7eb;padding:10px 24px}
+  .steps-inner{max-width:900px;margin:0 auto;display:flex;gap:4px;align-items:center}
+  .step-btn{display:flex;align-items:center;gap:8px;padding:8px 14px;border-radius:10px;border:none;background:transparent;cursor:pointer;font-size:13px;font-weight:600;color:#9ca3af;transition:all .2s;font-family:inherit}
+  .step-btn.active{background:#1a3a6b;color:#fff}
+  .step-btn .num{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;background:#e5e7eb;color:#9ca3af;flex-shrink:0}
+  .step-btn.active .num{background:#fff;color:#1a3a6b}
+  .step-btn.done .num{background:#22c55e;color:#fff}
+  .step-sep{width:28px;height:1px;background:#e5e7eb}
+
+  /* ── Main ── */
+  main{max-width:900px;margin:0 auto;padding:28px 24px}
+
+  /* ── Cards ── */
+  .card{background:#fff;border-radius:16px;border:1px solid #e5e7eb;box-shadow:0 1px 4px rgba(0,0,0,.06);overflow:hidden;margin-bottom:20px}
+  .card-head{padding:12px 20px;border-bottom:1px solid #f3f4f6;background:#fafafa;font-size:13px;font-weight:700;color:#374151}
+  .card-body{padding:20px}
+
+  /* ── Fields ── */
+  .field label{display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:#6b7280;margin-bottom:5px}
+  input[type=text],input[type=date],select{width:100%;border:1.5px solid #e5e7eb;border-radius:10px;padding:9px 12px;font-size:14px;font-family:inherit;outline:none;transition:border-color .2s,box-shadow .2s;background:#fff;color:#1f2937}
+  input[type=text]:focus,input[type=date]:focus,select:focus{border-color:#2563b0;box-shadow:0 0 0 3px rgba(37,99,176,.12)}
+  input.error{border-color:#ef4444;box-shadow:0 0 0 3px rgba(239,68,68,.12)}
+  select{cursor:pointer}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+  .grid4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:14px}
+
+  /* ── Radio Cards ── */
+  .radio-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px}
+  .radio-card{cursor:pointer;border:2px solid #e5e7eb;border-radius:12px;padding:12px;transition:all .15s}
+  .radio-card:hover{border-color:#93c5fd;background:#f0f7ff}
+  .radio-card.selected{border-color:#1a3a6b;background:#eff6ff}
+  .radio-card .rc-label{font-size:13px;font-weight:600;color:#374151}
+  .radio-card.selected .rc-label{color:#1a3a6b}
+  .radio-card .rc-sub{font-size:11px;color:#9ca3af;margin-top:3px}
+  .radio-dot{width:16px;height:16px;border-radius:50%;border:2px solid #d1d5db;margin-right:8px;flex-shrink:0;display:inline-block;vertical-align:middle;transition:all .15s}
+  .radio-card.selected .radio-dot{border-color:#1a3a6b;background:#1a3a6b;box-shadow:inset 0 0 0 3px #fff}
+
+  /* ── Check Cards ── */
+  .check-card{cursor:pointer;border:2px solid #e5e7eb;border-radius:12px;padding:14px 16px;display:flex;align-items:flex-start;gap:12px;transition:all .15s;margin-bottom:8px}
+  .check-card:hover{border-color:#93c5fd}
+  .check-card.checked{border-color:#1a3a6b;background:#eff6ff}
+  .check-card input[type=checkbox]{width:17px;height:17px;margin-top:2px;accent-color:#1a3a6b;flex-shrink:0}
+  .check-card .cc-label{font-size:13px;font-weight:600;color:#374151}
+  .check-card.checked .cc-label{color:#1a3a6b}
+  .check-card .cc-desc{font-size:11px;color:#9ca3af;margin-top:3px}
+
+  /* ── Career Items ── */
+  .career-item{border:1.5px solid #e5e7eb;border-radius:14px;padding:16px;margin-bottom:12px;background:#fff;transition:border-color .2s}
+  .career-item:hover{border-color:#93c5fd}
+  .career-item-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+  .career-num{font-size:13px;font-weight:700;color:#4b5563}
+  .btn-del{background:transparent;border:none;cursor:pointer;color:#f87171;font-size:12px;font-weight:600;padding:4px 10px;border-radius:8px;transition:all .15s;font-family:inherit}
+  .btn-del:hover{background:#fef2f2;color:#dc2626}
+  .btn-add{width:100%;padding:13px;border:2px dashed #2563b0;background:transparent;border-radius:12px;color:#2563b0;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .15s;margin-top:4px}
+  .btn-add:hover{background:#eff6ff}
+
+  /* ── Date Input with mask ── */
+  .date-wrap{position:relative}
+  .date-input{font-family:'Courier New',monospace;font-size:14px;letter-spacing:1px}
+  .date-hint{position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:11px;color:#d1d5db;pointer-events:none}
+  .date-input.valid{border-color:#22c55e}
+
+  /* ── Preview Box ── */
+  .preview-box{padding:12px 14px;border-radius:10px;border:1.5px solid;margin-top:10px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;text-align:center}
+  .preview-box .pb-label{font-size:10px;opacity:.65;margin-bottom:3px}
+  .preview-box .pb-val{font-size:14px;font-weight:700}
+  .preview-hidden{display:none}
+
+  /* ── Info Box ── */
+  .info-box{padding:12px 14px;border-radius:10px;border:1.5px solid;margin-bottom:14px;font-size:12px;line-height:1.7}
+  .info-box.blue{background:#eff6ff;border-color:#bfdbfe;color:#1e40af}
+  .info-box.green{background:#f0fdf4;border-color:#86efac;color:#166534}
+  .info-box.amber{background:#fffbeb;border-color:#fde68a;color:#92400e}
+  .info-box.red{background:#fef2f2;border-color:#fecaca;color:#991b1b; border-width: 2px;}
+
+  /* ── Buttons ── */
+  .btn-primary{background:#1a3a6b;color:#fff;border:none;border-radius:12px;padding:12px 28px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .2s;box-shadow:0 2px 8px rgba(26,58,107,.3)}
+  .btn-primary:hover{background:#2563b0;box-shadow:0 4px 14px rgba(37,99,176,.4)}
+  .btn-secondary{background:#fff;color:#6b7280;border:1.5px solid #e5e7eb;border-radius:12px;padding:12px 20px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .2s}
+  .btn-secondary:hover{background:#f9fafb;border-color:#d1d5db}
+  .btn-row{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:20px}
+
+  /* ── Total Summary ── */
+  .total-bar{background:linear-gradient(135deg,#1a3a6b,#2563b0);color:#fff;border-radius:14px;padding:16px 20px;margin-bottom:16px}
+  .total-bar .tl{font-size:11px;color:#93c5fd;margin-bottom:3px}
+  .total-bar .tv{font-size:24px;font-weight:900}
+  .total-bar .ts{font-size:12px;color:#93c5fd;margin-top:4px}
+
+  /* ── Result ── */
+  .result-hero{background:linear-gradient(135deg,#1a3a6b 0%,#2563b0 100%);color:#fff;border-radius:20px;padding:28px;margin-bottom:20px;box-shadow:0 8px 24px rgba(26,58,107,.3)}
+  .result-hero-inner{display:flex;justify-content:space-between;align-items:flex-start}
+  .result-name{font-size:26px;font-weight:900;margin-bottom:4px}
+  .result-sub{font-size:12px;color:#93c5fd}
+  .result-grade{text-align:right}
+  .result-grade-label{font-size:12px;color:#93c5fd;margin-bottom:2px}
+  .result-grade-num{font-size:64px;font-weight:900;line-height:1}
+  .result-grade-unit{font-size:16px;color:#93c5fd;margin-top:4px}
+  .remain-bar{background:rgba(255,255,255,.12);border-radius:10px;padding:12px 14px;margin-top:16px;font-size:13px}
+  .remain-bar span{color:#dbeafe}
+  .remain-bar strong{color:#fff}
+
+  /* ── Calc Steps ── */
+  .calc-row{display:flex;justify-content:space-between;align-items:flex-start;padding:12px 14px;border-radius:10px;border:1.5px solid;margin-bottom:8px}
+  .calc-row .cr-label{font-size:13px;font-weight:700}
+  .calc-row .cr-sub{font-size:11px;opacity:.7;margin-top:3px}
+  .calc-row .cr-val{font-size:18px;font-weight:900;margin-left:12px;white-space:nowrap}
+  .calc-row.blue{background:#eff6ff;border-color:#bfdbfe;color:#1e40af}
+  .calc-row.green{background:#f0fdf4;border-color:#bbf7d0;color:#166534}
+  .calc-row.purple{background:#faf5ff;border-color:#e9d5ff;color:#6b21a8}
+  .calc-row.amber{background:#fffbeb;border-color:#fde68a;color:#92400e}
+  .calc-total{background:#1a3a6b;color:#fff;border-radius:12px;padding:14px 18px;display:flex;justify-content:space-between;align-items:center;margin-top:8px}
+  .calc-total .ct-eq{font-size:12px;color:#93c5fd}
+  .calc-total .ct-num{font-size:32px;font-weight:900}
+
+  /* ── Detail Table (Screen) ── */
+  .screen-table {width:100%;border-collapse:collapse;font-size:13px}
+  .screen-table th{background:#f9fafb;padding:9px 12px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#6b7280;border-bottom:1.5px solid #e5e7eb}
+  .screen-table td{padding:9px 12px;border-bottom:1px solid #f3f4f6;color:#374151}
+  .screen-table tr:hover td{background:#fafafa}
+  .td-sum{font-weight:700;color:#1a3a6b;background:#eff6ff!important}
+  .tag{display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;background:#e5e7eb;color:#374151;font-family:'Courier New',monospace}
+
+  @media(max-width:600px){.grid3{grid-template-columns:1fr}.grid4{grid-template-columns:1fr 1fr}.result-hero-inner{flex-direction:column;gap:16px}.result-grade{text-align:left}}
+  @media(max-width:400px){.grid4{grid-template-columns:1fr}}
+
+  /* ── 법령 추천 배지 ── */
+  .ai-badge{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:linear-gradient(135deg,#8b5cf6,#6366f1);color:#fff;margin-left:6px;vertical-align:middle;letter-spacing:.3px;animation:aiBadgePulse 2s ease-in-out 1}
+  @keyframes aiBadgePulse{0%{transform:scale(1)}50%{transform:scale(1.08)}100%{transform:scale(1)}}
+  .ai-confidence{font-size:9px;padding:1px 5px;border-radius:10px;font-weight:600;margin-left:4px}
+  .ai-confidence.high{background:#dcfce7;color:#166534}
+  .ai-confidence.mid{background:#fef9c3;color:#854d0e}
+  .ai-confidence.low{background:#fee2e2;color:#991b1b}
+  .career-item.ai-suggested{border-color:#c4b5fd;background:#faf5ff}
+  .career-item.ai-suggested:hover{border-color:#8b5cf6}
+  .ai-review-bar{background:linear-gradient(135deg,#7c3aed,#6366f1);color:#fff;border-radius:14px;padding:16px 20px;margin-bottom:16px;display:none}
+  .ai-review-bar .arb-title{font-size:14px;font-weight:800;margin-bottom:4px}
+  .ai-review-bar .arb-sub{font-size:12px;color:#ddd6fe}
+  .ai-review-bar .arb-actions{display:flex;gap:8px;margin-top:12px}
+  .ai-review-bar .arb-btn{padding:8px 16px;border-radius:10px;border:none;cursor:pointer;font-size:12px;font-weight:700;font-family:inherit;transition:all .15s}
+  .ai-review-bar .arb-btn.accept{background:#fff;color:#6d28d9}
+  .ai-review-bar .arb-btn.accept:hover{background:#ede9fe}
+  .ai-review-bar .arb-btn.reject{background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.3)}
+  .ai-review-bar .arb-btn.reject:hover{background:rgba(255,255,255,.25)}
+  .legal-rec-box{margin:0 0 12px;padding:12px 14px;border:1px solid #c4b5fd;border-radius:11px;background:#faf5ff;color:#4c1d95;font-size:11px;line-height:1.55}
+  .legal-rec-title{font-size:12px;font-weight:800;margin-bottom:5px}
+  .legal-rec-chips{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+  .legal-rec-chip{border:1px solid #a78bfa;border-radius:999px;background:#fff;color:#6d28d9;padding:5px 9px;font-family:inherit;font-size:10px;font-weight:700;cursor:pointer}
+  .legal-rec-chip:hover,.legal-rec-chip.selected{background:#7c3aed;color:#fff}
+  .legal-rec-checks{color:#92400e;margin-top:5px}
+  .legal-rec-basis{color:#64748b;margin-top:5px}
+  .review-required-btn{border:1px solid #d97706;border-radius:999px;background:#fffbeb;color:#92400e;padding:4px 9px;font-family:inherit;font-size:11px;font-weight:700;cursor:pointer;margin-left:6px}
+  .law-snapshot{margin-bottom:14px;padding:11px 14px;border-radius:10px;border:1px solid #bfdbfe;background:#eff6ff;color:#1e3a8a;font-size:11px;line-height:1.55}
+  .part-time-note{font-size:10px;color:#92400e;margin-top:4px;line-height:1.45}
+
+  /* Custom Modal Styles */
+  #customModal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.4); z-index:9999; align-items:center; justify-content:center; }
+  #customModal.show { display:flex; }
+  .modal-content { background:#fff; padding:24px; border-radius:16px; width:90%; max-width:480px; max-height:80vh; overflow-y:auto; box-shadow:0 10px 25px rgba(0,0,0,0.1); }
+  .modal-text { font-size:14px; color:#374151; margin-bottom:24px; white-space:pre-wrap; line-height:1.5; font-weight:500;}
+  .modal-actions { display:flex; justify-content:flex-end; gap:8px; }
+  .modal-actions button { padding:8px 16px; font-size:13px; border-radius:8px; border:none; cursor:pointer; font-weight:600;}
+
+  /* ── File Input Wrapper ── */
+  .file-input-wrapper { display: flex; align-items: center; gap: 10px; margin-top: 12px; }
+  .file-input-wrapper input[type="file"] { flex: 1; padding: 10px; border: 1.5px dashed #2563b0; border-radius: 12px; background: #eff6ff; color: #1e40af; font-size: 13px; cursor: pointer;}
+
+  /* ── 기존 호봉자료 가져오기 ── */
+  .salary-import-card{border-color:#c7d2fe}
+  .salary-import-card .card-head{background:#eef2ff;color:#3730a3}
+  .salary-review{display:none;margin-top:16px;border:1px solid #c7d2fe;border-radius:14px;overflow:hidden;background:#fff}
+  .salary-review.show{display:block}
+  .salary-review-head{padding:13px 14px;background:#f5f3ff;border-bottom:1px solid #ddd6fe;display:flex;justify-content:space-between;gap:12px;align-items:center}
+  .salary-review-title{font-size:13px;font-weight:800;color:#4c1d95}
+  .salary-doc-badges{display:flex;flex-wrap:wrap;gap:6px;padding:12px 14px 0}
+  .salary-doc-badge{font-size:11px;font-weight:700;padding:4px 9px;border-radius:999px;background:#eef2ff;color:#3730a3;border:1px solid #c7d2fe}
+  .salary-reference{margin:12px 14px;padding:12px;border-radius:10px;background:#fffbeb;border:1px solid #fde68a;color:#78350f}
+  .salary-reference-title{font-size:12px;font-weight:800;margin-bottom:7px}
+  .salary-reference-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:6px 12px;font-size:11px}
+  .salary-reference-grid strong{color:#92400e}
+  .salary-table-wrap{margin:12px 14px;overflow:auto;border:1px solid #e5e7eb;border-radius:10px}
+  .salary-table{width:100%;min-width:760px;border-collapse:collapse;font-size:12px}
+  .salary-table th{padding:8px 9px;background:#f8fafc;color:#64748b;text-align:left;white-space:nowrap;border-bottom:1px solid #e5e7eb}
+  .salary-table td{padding:9px;border-bottom:1px solid #f1f5f9;vertical-align:top}
+  .salary-table tr:last-child td{border-bottom:0}
+  .salary-table tr.duplicate td{background:#f8fafc;color:#94a3b8}
+  .salary-table tr.review td{background:#fffdf5}
+  .salary-check{width:16px;height:16px;accent-color:#4f46e5}
+  .salary-status{display:inline-block;padding:3px 7px;border-radius:999px;font-size:10px;font-weight:800;white-space:nowrap}
+  .salary-status.new{background:#dcfce7;color:#166534}
+  .salary-status.review{background:#fef3c7;color:#92400e}
+  .salary-status.duplicate{background:#e2e8f0;color:#475569}
+  .salary-source{font-size:10px;color:#64748b;margin-top:3px}
+  .salary-review-actions{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:8px;padding:0 14px 14px}
+  @media(max-width:600px){.file-input-wrapper{align-items:stretch;flex-direction:column}.salary-review-head{align-items:flex-start;flex-direction:column}}
+
+  /* ── Print Preview Mode (Screen) ── */
+  body.print-preview-mode { background: #fff; padding: 0; }
+  body.print-preview-mode header,
+  body.print-preview-mode .steps-bar,
+  body.print-preview-mode .screen-only,
+  body.print-preview-mode footer { display: none !important; }
+  
+  body.print-preview-mode #printArea { 
+    display: block !important; 
+    background: #fff; 
+    width: 100%;
+    margin: 0; 
+    padding: 0; 
+  }
+
+  /* ── Print Styles (Excel Format - 1장 맞춤 세로 모드 최적화) ── */
+  #printArea { display: none; background: #fff; color: #000; }
+  @media print {
+    body { background: #fff; margin: 0; padding: 0; color: #000; }
+    header, .steps-bar, footer, .btn-row, .info-box, .card, .result-hero { display: none !important; }
+    .screen-only { display: none !important; }
+    main { padding: 0; max-width: 100%; }
+    #printArea { display: block !important; padding: 0; box-shadow: none; margin: 0; max-width: none; }
+    @page { margin: 3mm 10mm 8mm 10mm; size: A4 portrait; } 
+  }
+  .print-title { text-align: center; font-size: 20px; font-weight: 900; margin-bottom: 12px; letter-spacing: 2px; }
+  
+  .formal-table { width: 100%; border-collapse: collapse; margin-bottom: 10px; font-size: 10px; border: 2px solid #000; font-family: 'Malgun Gothic', 'Noto Sans KR', sans-serif; page-break-inside: auto; }
+  .formal-table th, .formal-table td { border: 1px solid #000; padding: 3px 2px; text-align: center; vertical-align: middle; color: #000; word-break: keep-all; page-break-inside: avoid !important; break-inside: avoid !important; }
+  .formal-table tr { page-break-inside: avoid !important; break-inside: avoid !important; page-break-after: auto; }
+  .formal-table th { background: #f4f4f4; font-weight: 700; }
+  .formal-table .txt-left { text-align: left; padding-left: 6px; }
+  
+  .print-footer { margin-top: 15px; text-align: right; font-size: 12px; page-break-inside: avoid; break-inside: avoid; }
+  .print-footer p { margin-bottom: 4px; }
+  .print-sign { font-size: 13px; font-weight: bold; margin-top: 10px;}
+
+  /* ── Desktop launch splash ── */
+  body.splash-active { overflow: hidden; }
+  .launch-splash {
+    position: fixed;
+    inset: 0;
+    z-index: 100000;
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+    padding: 32px;
+    background:
+      radial-gradient(circle at 18% 18%, rgba(255,255,255,.95) 0 7%, transparent 28%),
+      radial-gradient(circle at 82% 22%, rgba(147,197,253,.42), transparent 30%),
+      linear-gradient(135deg, #fff7fb 0%, #f8edf7 46%, #e8f2ff 100%);
+    opacity: 1;
+    transition: opacity .55s ease, visibility .55s ease;
+  }
+  .launch-splash.is-leaving { opacity: 0; visibility: hidden; pointer-events: none; }
+  .splash-orb { position:absolute; border-radius:50%; filter:blur(2px); opacity:.58; animation:splashFloat 5s ease-in-out infinite; }
+  .splash-orb.one { width:170px; height:170px; left:7%; top:13%; background:rgba(251,182,206,.35); }
+  .splash-orb.two { width:230px; height:230px; right:5%; bottom:7%; background:rgba(96,165,250,.23); animation-delay:-1.7s; }
+  .splash-orb.three { width:82px; height:82px; right:18%; top:10%; background:rgba(255,255,255,.8); animation-delay:-3s; }
+  .splash-stage { width:min(940px, 88vw); text-align:center; animation:splashArrive .9s cubic-bezier(.2,.8,.2,1) both; }
+  .splash-card {
+    --tilt-x: 0deg;
+    --tilt-y: 0deg;
+    position:relative;
+    padding:18px;
+    border:1px solid rgba(255,255,255,.85);
+    border-radius:30px;
+    background:rgba(255,255,255,.7);
+    box-shadow:0 30px 80px rgba(49,46,129,.17), inset 0 1px 0 #fff;
+    backdrop-filter:blur(16px);
+    transform:perspective(1100px) rotateX(var(--tilt-x)) rotateY(var(--tilt-y));
+    transition:transform .16s ease-out, box-shadow .25s ease;
+    will-change:transform;
+  }
+  .splash-card:hover { box-shadow:0 38px 95px rgba(49,46,129,.23), inset 0 1px 0 #fff; }
+  .splash-mark {
+    display:grid;
+    place-items:center;
+    width:108px;
+    height:108px;
+    margin:14px auto 0;
+    border-radius:30px;
+    color:#fff;
+    font-size:28px;
+    font-weight:900;
+    letter-spacing:-1px;
+    background:linear-gradient(145deg,#1e3a8a,#2563eb 58%,#38bdf8);
+    box-shadow:0 18px 45px rgba(37,99,235,.28), inset 0 1px 0 rgba(255,255,255,.35);
+    opacity:0;
+    transform:translateY(14px) scale(.94);
+    animation:splashText .7s .2s ease forwards;
+  }
+  .splash-kicker { margin-top:18px; color:#2563b0; font-size:12px; font-weight:900; letter-spacing:1.8px; opacity:0; animation:splashFade .7s .35s ease forwards; }
+  .splash-brand {
+    margin-top:8px;
+    color:#172554;
+    font-size:clamp(28px,4vw,48px);
+    font-weight:900;
+    letter-spacing:-1.8px;
+    opacity:0;
+    transform:translateY(14px);
+    animation:splashText .7s .45s ease forwards;
+  }
+  .splash-brand span { color:#2563b0; text-shadow:0 6px 22px rgba(37,99,176,.2); }
+  .splash-message { margin-top:7px; color:#64748b; font-size:13px; font-weight:600; opacity:0; animation:splashFade .7s .8s ease forwards; }
+  .splash-progress { width:min(360px,70%); height:4px; margin:22px auto 0; overflow:hidden; border-radius:99px; background:rgba(148,163,184,.24); }
+  .splash-progress::after { content:""; display:block; width:100%; height:100%; border-radius:inherit; background:linear-gradient(90deg,#f472b6,#2563b0); transform:translateX(-100%); animation:splashLoad 3.2s .2s cubic-bezier(.25,.8,.25,1) forwards; }
+  .splash-skip { margin-top:14px; padding:7px 14px; border:0; border-radius:999px; background:transparent; color:#64748b; font-family:inherit; font-size:11px; font-weight:600; cursor:pointer; opacity:0; animation:splashFade .6s 1.1s ease forwards; }
+  .splash-skip:hover { color:#1e3a8a; background:rgba(255,255,255,.65); }
+  @keyframes splashArrive { from { opacity:0; transform:translateY(28px) scale(.96); } to { opacity:1; transform:translateY(0) scale(1); } }
+  @keyframes splashText { to { opacity:1; transform:translateY(0); } }
+  @keyframes splashFade { to { opacity:1; } }
+  @keyframes splashLoad { to { transform:translateX(0); } }
+  @keyframes splashFloat { 0%,100% { transform:translate3d(0,0,0); } 50% { transform:translate3d(0,-18px,0); } }
+  @media (max-width:650px) {
+    .launch-splash { padding:16px; }
+    .splash-stage { width:96vw; }
+    .splash-card { padding:10px; border-radius:22px; }
+    .splash-mark { width:88px; height:88px; border-radius:25px; font-size:24px; }
+  }
+  @media (prefers-reduced-motion:reduce) {
+    .splash-stage,.splash-brand,.splash-message,.splash-skip,.splash-progress::after,.splash-orb { animation-duration:.01ms !important; animation-delay:0s !important; }
+    .splash-card { transform:none !important; }
+  }
+</style>
+<link rel="stylesheet" href="./ui-refresh.css">
+</head>
+<body>
+
+<!-- Header -->
+<a class="brand-channel brand-banner no-print" href="https://www.youtube.com/@wise-gyohaeng" target="_blank" rel="noopener noreferrer" onclick="openBrandChannel(event)" title="슬기로운교행생활 유튜브 채널 · 기본 브라우저에서 열기" aria-label="슬기로운교행생활 유튜브 채널 열기">
+  <img src="./assets/wise-gyohaeng-banner.png" alt="슬기로운 교행생활">
+</a>
+<header>
+  <div class="header-inner">
+    <div class="header-tag">슬기로운교행생활 <span class="header-divider"></span> 학교 업무 도구</div>
+    <h1>교원 호봉획정 도우미</h1>
+    <p>증빙자료 정리부터 경력 검토, 호봉획정표 작성까지</p>
+    <span class="header-local">이 PC에서만 처리 · CPU 전용</span>
+  </div>
+</header>
+
+<!-- Steps -->
+<div class="steps-bar no-print">
+  <div class="steps-inner">
+    <button class="step-btn active" id="stepBtn1" onclick="goStep(1)"><span class="num" id="stepNum1">1</span><span class="step-label"><strong>자료 입력</strong><small>문서·기본정보</small></span></button>
+    <div class="step-sep"></div>
+    <button class="step-btn" id="stepBtn2" onclick="goStep(2)"><span class="num" id="stepNum2">2</span><span class="step-label"><strong>경력 검토</strong><small>기간·환산율</small></span></button>
+    <div class="step-sep"></div>
+    <button class="step-btn" id="stepBtn3" onclick="goStep(3)"><span class="num" id="stepNum3">3</span><span class="step-label"><strong>결과 확인</strong><small>엑셀·PDF 저장</small></span></button>
+  </div>
+</div>
+
+<main>
+  <section id="assistantPanel" class="assistant-panel no-print" hidden aria-label="4B CPU 참고 추천 상태">
+    <div class="assistant-heading"><strong>4B CPU 참고 추천</strong><span id="assistantStatus" role="status" aria-live="polite">PC 상태 확인 중</span></div>
+    <p id="assistantMemory" class="field-help"></p>
+    <div class="assistant-controls">
+      <button type="button" id="assistantPrepare" class="btn-secondary" onclick="prepareAssistant()">AI 다시 준비해 보기</button>
+      <button type="button" id="assistantUnload" class="btn-secondary" onclick="unloadAssistant()">AI 모델 내리기</button>
+      <label><input type="checkbox" id="assistantAuto" onchange="setAssistantAuto(this.checked)"> 메모리가 충분하면 실행 시 AI 자동 준비</label>
+    </div>
+    <details class="task-guide" id="guideAssistant"><summary>8GB PC·자동 준비·4B 참고 후보 사용 안내</summary><div class="guide-body">
+      <p>4B판에는 CPU 모델과 내부 로컬 엔진이 함께 들어 있습니다. 별도 Ollama 설치나 명령창 실행은 필요 없습니다. 앱이 전용 127.0.0.1 임시 포트에서 숨김 자식 프로세스를 자동 관리하며, 개인 서류를 외부로 보내지 않습니다. 기존 Ollama 서비스에는 접속하지 않습니다.</p>
+      <p><strong>8GB급 PC에서는 모델을 로딩하지 않습니다.</strong> 기본 문서 읽기·규칙 추천·계산·저장은 계속 사용할 수 있습니다. 총 메모리 15GiB 이상(16GB급)이며 현재 가용 메모리 8GiB 이상일 때만 로딩합니다. 메모리 조회 실패나 부족 시 이유를 표시하며, 다른 프로그램을 닫은 뒤 <strong>AI 다시 준비해 보기</strong>로 다시 확인할 수 있습니다. 이미 준비된 모델의 추론에도 가용 메모리 2GiB 이상이 필요합니다.</p>
+      <p>64GB 검증 PC에서 모델 프로세스가 약 6~7GiB를 사용했기 때문에 보수적으로 정한 기준이며, 모든 16GB PC에서의 성능을 보장하지 않습니다. 첫 모델 로딩 시간은 사라지는 것이 아니라 앱 시작 후 백그라운드로 앞당깁니다. 준비 중에도 파일 선택과 기본정보 입력이 가능합니다.</p>
+      <p>자동 준비 체크를 끄면 다음 실행부터 규칙 모드로 시작합니다. 체크 설정만 PC의 사용자 설정 폴더에 저장하며 입력한 개인정보는 저장하지 않습니다. <strong>AI 모델 내리기</strong>는 모델과 전용 엔진을 종료해 메모리를 반환하고, 이 실행에서는 자동으로 다시 로딩하지 않습니다. AI 추천 중에는 내리기 버튼을 사용할 수 없습니다.</p>
+      <p>2단계의 <strong>4B 참고 후보 보기</strong>는 기관·직종·증빙 문장에서 참고 후보를 찾습니다. <strong>기존 규칙 추천이나 선택한 환산율을 바꾸지 않습니다.</strong> 미확인·상충 증빙은 원본으로 확인하고 담당자가 기존 환산율 선택란에서 직접 선택해야 합니다. 준비 실패·메모리 부족 시 AI만 사용하지 않고 기본 기능을 이어갈 수 있습니다.</p>
+    </div></details>
+  </section>
+  <!-- ════ STEP 1 ════ -->
+  <div id="step1" class="screen-only">
+
+    <section class="section-intro" aria-labelledby="startTitle">
+      <div class="step-help-heading"><span class="eyebrow">STEP 01 / 자료 준비</span><button type="button" id="stepHelp1" class="step-help-button" onclick="openStepHelp(1, this)" aria-haspopup="dialog" aria-controls="stepHelpDialog">이 단계 도움말</button></div>
+      <h2 id="startTitle">어떤 자료로 시작할까요?</h2>
+      <p>증명서를 불러오거나 직접 입력할 수 있습니다. 불러온 내용은 자동 확정되지 않으니 원본과 대조해 주세요.</p>
+      <div class="start-options" role="group" aria-label="시작 방법 선택">
+        <button type="button" class="start-option selected" id="modeDocument" onclick="setStartMode('document')" aria-pressed="true"><span class="option-index">01</span><strong>증명서 읽기</strong><small>경력·졸업·자격 증명서</small></button>
+        <button type="button" class="start-option" id="modeExisting" onclick="setStartMode('existing')" aria-pressed="false"><span class="option-index">02</span><strong>기존 호봉자료 가져오기</strong><small>획정표·합산신청서</small></button>
+        <button type="button" class="start-option" id="modeManual" onclick="setStartMode('manual')" aria-pressed="false"><span class="option-index">03</span><strong>직접 입력하기</strong><small>파일 없이 시작</small></button>
+      </div>
+    </section>
+
+    <!-- 로컬 CPU 문서 통합 자동 추출 -->
+    <div class="card import-panel" id="documentPanel">
+      <div class="card-head">증명서 읽기 <span class="card-head-note">PDF 또는 이미지 1개</span></div>
+      <div class="card-body">
+        <p class="import-description" id="documentQuickGuide">같은 대상자의 <strong>경력증명서·졸업증명서·교원자격증을 여러 쪽 PDF 1개로 준비하면 편리합니다.</strong> 필수는 아니며, 개별 PDF·이미지 1개도 읽을 수 있습니다. 파일당 50MB·30쪽 이내로 준비하세요.</p>
+          <div class="file-input-wrapper">
+            <input type="file" id="ocrFile" accept=".pdf, image/*" aria-label="읽을 증명서 PDF 또는 이미지 1개 선택" aria-describedby="documentQuickGuide">
+            <button id="btnOcr" class="btn-primary" onclick="extractAllFromOcr()">선택한 파일 분석</button>
+          </div>
+          <div id="ocrStatus" class="import-status" role="status" aria-live="polite"></div>
+          <p class="guide-caution">분석을 다시 하면 경력이 추가됩니다. 같은 파일의 중복 추가를 자동으로 막지 않으며, 기존 학력·자격이 바뀔 수 있으니 확인하세요.</p>
+          <details class="task-guide" id="guideDocument">
+            <summary>증명서 준비부터 분석 완료까지</summary>
+            <div class="guide-body">
+              <ol>
+                <li><strong>한 사람의 서류만 준비하세요.</strong> 경력증명서와 졸업증명서, 교원자격증을 스캔할 때 여러 쪽 PDF 한 개로 저장하는 방법을 권장합니다. 없는 서류를 억지로 넣을 필요는 없으며, 인사기록카드나 개별 PDF·이미지도 사용할 수 있습니다. 다른 사람의 서류를 섞지 마세요.</li>
+                <li><strong>글자가 잘 보여야 합니다.</strong> 스캔은 300dpi를 권장하며, 한 페이지에는 원문 1쪽씩 바른 방향으로 담으세요. 표의 끝·도장·근무기간이 잘리지 않았는지, 특히 날짜가 흐리지 않은지 확인하세요.</li>
+                <li><strong>형식을 확인하세요.</strong> 한글·Word 문서는 먼저 PDF로 저장하고, 암호가 걸린 PDF는 열람 권한이 있는 암호 해제본을 준비하세요. 파일은 한 번에 1개, 50MB·30쪽 이내입니다. 개인정보 서류를 온라인 PDF 병합 서비스에 올리지 말고 PC에서 스캔·저장하세요.</li>
+                <li><strong>파일 선택 → 선택한 파일 분석.</strong> 문서량과 PC 성능에 따라 수분이 걸릴 수 있습니다. 완료 전에는 다시 누르지 마세요. 완료되면 아래 성명·임용일·교원자격증·최종 학력을 확인하고 <strong>경력 검토로 계속</strong>을 누르세요.</li>
+              </ol>
+              <p><strong>추가 파일을 읽을 때:</strong> 기존 경력 뒤에 새 경력이 누적되며 중복을 자동 차단하지 않습니다. 같은 서류를 다시 읽었다면 2단계에서 중복 행을 삭제하세요. 학력·자격 등 기존 입력값이 바뀔 수 있으니 기본정보도 다시 대조하세요.</p>
+              <p><strong>파일이 안 읽히거나 내용이 빠졌다면:</strong> PDF·이미지 여부, 암호, 크기·쪽 수와 선명도를 확인하고 파일을 다시 선택하세요. 원본이 흐리면 재스캔하거나 <strong>직접 입력하기</strong>로 보완할 수 있습니다.</p>
+            </div>
+          </details>
+          <p class="privacy-note">파일은 외부로 전송되지 않습니다. 인터넷 연결 없이 이 PC의 CPU에서 처리합니다.</p>
+      </div>
+    </div>
+
+    <!-- 기존 호봉자료 전용 가져오기 -->
+    <div class="card salary-import-card import-panel" id="existingPanel" hidden>
+      <div class="card-head">기존 호봉자료 가져오기 <span class="card-head-note">여러 파일 선택 가능</span></div>
+      <div class="card-body">
+          <p class="import-description" id="existingQuickGuide">호봉획정표·재획정표·경력기간 합산신청서·시간강사 경력 환산표는 여기에서 읽으세요. <strong>분석 → 검토표 확인 → 선택 항목 반영</strong> 순서로 진행하며, 기존 호봉을 그대로 승계하는 기능은 아닙니다.</p>
+          <div class="file-input-wrapper">
+            <input type="file" id="salaryFile" accept=".pdf, image/*" multiple aria-label="가져올 기존 호봉자료 PDF 또는 이미지 선택, 여러 파일 가능" aria-describedby="existingQuickGuide">
+            <button id="btnSalaryOcr" class="btn-primary" onclick="analyzeSalaryDocuments()">선택한 파일 분석</button>
+          </div>
+          <div id="salaryStatus" class="import-status" role="status" aria-live="polite"></div>
+          <p class="guide-caution">여러 파일은 파일 선택 창에서 Ctrl 키로 고르세요. 노란 행은 원본을 확인한 뒤 직접 선택하고, 회색 행은 이미 입력된 기간인지 대조하세요.</p>
+          <details class="task-guide" id="guideExisting">
+            <summary>기존 자료의 검토표·기준 정보 반영 방법</summary>
+            <div class="guide-body">
+              <ol>
+                <li><strong>같은 대상자의 자료를 선택하세요.</strong> PDF·이미지를 여러 개 선택할 수 있습니다. Windows 파일 선택 창에서 Ctrl 키를 누른 채 파일을 클릭하세요. 각 파일은 50MB·30쪽 이내로 준비하고, 한글·Word 원문은 PDF로 저장하세요.</li>
+                <li><strong>선택한 파일 분석</strong>을 누르고 검토표가 나올 때까지 기다리세요. 문서량과 PC 성능에 따라 수분이 걸릴 수 있습니다. 분석만으로 경력이 입력되지는 않습니다.</li>
+                <li><strong>검토표를 원본과 대조하세요.</strong> 근무기간·기관·직종·시수·추천 유형을 확인하세요. 노란 <strong>원본 확인</strong> 행은 증빙 확인 후 체크하고, 회색 <strong>기입력</strong> 행은 같은 기간이 이미 입력되어 선택할 수 없는 항목입니다. 기간이 같아도 실제로 같은 경력인지 직접 확인하세요.</li>
+                <li><strong>선택 항목 반영</strong>을 누르면 체크한 경력이 추가됩니다. <strong>신규 경력만 선택</strong>은 체크 상태만 바꾸며, <strong>닫기</strong>는 검토표만 닫습니다. 반영한 뒤에도 2단계에서 환산유형·시수·종료일 산입 여부를 확인하세요.</li>
+                <li><strong>기준 정보 반영</strong>은 별도 버튼입니다. 판독된 소속·직위·획정일·교원자격만 기본정보에 넣으며 기존 값을 바꿀 수 있습니다. 성명·학력은 별도로 입력하고, 이번 임용일과 자격에 맞는지 확인하세요.</li>
+              </ol>
+              <p><strong>기존 호봉·잔여기간은 참고값입니다.</strong> 기존 계산을 무조건 승계하지 않고 반영한 경력과 입력한 기본정보로 다시 계산합니다. 잘못 읽힌 항목은 2단계에서 수정하거나 직접 추가하세요. 파일 오류는 형식·암호·크기·쪽 수·선명도를 확인한 뒤 다시 시도하세요.</p>
+            </div>
+          </details>
+
+        <div id="salaryReview" class="salary-review">
+          <div class="salary-review-head">
+            <div>
+              <div class="salary-review-title">추출 결과 검토 후 선택 반영</div>
+              <div style="font-size:11px;color:#6b7280;margin-top:3px">노란 행은 원본 확인이 필요하고, 회색 행은 이미 입력된 기간입니다.</div>
+            </div>
+            <button type="button" class="btn-secondary" onclick="closeSalaryReview()" style="padding:7px 12px">닫기</button>
+          </div>
+          <div id="salaryDocBadges" class="salary-doc-badges"></div>
+          <div id="salaryReference" class="salary-reference"></div>
+          <div class="salary-table-wrap">
+            <table class="salary-table">
+              <thead><tr><th>선택</th><th>근무기간</th><th>근무학교(회사)</th><th>직종</th><th>추천 유형/시수</th><th>상태</th></tr></thead>
+              <tbody id="salaryReviewRows"></tbody>
+            </table>
+          </div>
+          <div class="salary-review-actions">
+            <button type="button" class="btn-secondary" onclick="selectNewSalaryRows()">신규 경력만 선택</button>
+            <button type="button" id="btnApplySalaryReference" class="btn-secondary" onclick="applySalaryReference()">기준 정보 반영</button>
+            <button type="button" class="btn-primary" onclick="applySelectedSalaryRows()">선택 항목 반영</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="manual-panel" id="manualPanel" hidden>
+      <strong>파일 없이 진행합니다.</strong> 아래에서 성명·임용일·자격·학력을 입력한 뒤, 다음 단계에서 경력을 추가하세요.
+      <details class="task-guide" id="guideManual">
+        <summary>직접 입력 순서와 다른 대상자 시작 방법</summary>
+        <div class="guide-body">
+          <ol>
+            <li>파일 선택·분석은 필요 없습니다. 아래 기본정보를 먼저 채우세요.</li>
+            <li><strong>경력 검토로 계속 → + 경력 직접 추가</strong>를 누르고 증빙에 적힌 근무기간별로 입력하세요.</li>
+            <li>잘못 입력한 값은 해당 칸에서 고치고, 불필요한 경력은 그 행의 <strong>삭제</strong>를 누르세요.</li>
+          </ol>
+          <p><strong>시작 방법을 바꿔도 기존 값은 유지됩니다.</strong> 다른 대상자를 작업하려면 먼저 현재 결과를 저장한 뒤 3단계의 <strong>처음부터 다시</strong>로 입력값을 비우세요. 이 버튼은 입력·선택 파일·분석 검토표를 초기화하며 PC의 원본 파일을 삭제하지 않습니다.</p>
+        </div>
+      </details>
+    </div>
+
+    <div class="section-heading" id="basicInfoHeading"><span class="eyebrow">STEP 01 / 입력값 확인</span><h2>기본정보를 확인하세요</h2><p>성명, 임용일, 교원자격증, 최종 학력은 다음 단계로 넘어가기 전에 필요합니다.</p></div>
+    <details class="task-guide guide-standalone" id="guideBasics">
+      <summary>필수 입력과 조서 표기용 항목의 차이</summary>
+      <div class="guide-body">
+        <ol>
+          <li><strong>성명·임용(시작)일:</strong> 이번 대상자의 이름과 호봉획정일을 입력하세요. 날짜는 <strong>2026-03-01</strong>처럼 연-월-일 형식입니다. 기존 표의 획정일을 가져왔더라도 이번 임용일인지 다시 확인하세요.</li>
+          <li><strong>교원자격증·최종 학력:</strong> 이번 임용에 적용되는 자격종별과 증명서상의 학력을 선택하세요. 파일을 읽었어도 잘못 선택되거나 비어 있지 않은지 대조해야 합니다.</li>
+          <li><strong>출력용 학력:</strong> 조서에 적을 학교·학과 이름입니다. 여기에 글자를 입력해도 계산용 <strong>최종 학력</strong>이 선택되지는 않습니다. 두 항목을 따로 확인하세요.</li>
+          <li><strong>선택 항목:</strong> 소속·직위·작성자와 추가 표기 항목은 문서 작성에 맞게 채우고, 해당 없으면 빈칸으로 두세요. 공제 연수·필요 경력 연수는 근거 없이 추정하지 마세요. 가산연수 체크도 증빙이 있는 해당 사항만 선택하세요.</li>
+        </ol>
+        <p><strong>다음 단계가 열리지 않으면:</strong> 안내창에 나온 필수 항목과 날짜 형식을 고친 뒤 <strong>경력 검토로 계속</strong>을 다시 누르세요. 불러오기·직접 입력 중 어느 방법이든 같은 검토 절차를 거칩니다.</p>
+        <p><strong>작업은 자동 임시저장되지 않습니다.</strong> 앱을 닫거나 초기화하기 전 결과를 엑셀·PDF로 저장하세요. 저장한 문서는 결과물이며 입력 상태를 그대로 복구하는 작업 파일은 아닙니다.</p>
+      </div>
+    </details>
+
+    <!-- 기본 인적사항 및 출력 정보 -->
+    <div class="card">
+      <div class="card-head">대상자 정보 <span class="card-head-note">성명·임용일 필수</span></div>
+      <div class="card-body">
+        <div class="grid3" style="margin-bottom: 14px;">
+          <div class="field">
+            <label for="name">성명</label>
+            <input type="text" id="name" placeholder="예: 홍길동">
+          </div>
+          <div class="field">
+            <label for="hireDate">임용(시작)일 (호봉획정일)</label>
+            <div class="date-wrap">
+              <input type="text" id="hireDate" class="date-input" placeholder="YYYY-MM-DD" maxlength="10" oninput="maskDate(this)" onblur="validateDate(this)">
+              <span class="date-hint">예: 2025-03-01</span>
+            </div>
+          </div>
+          <div class="field">
+            <label for="eduText">출력용 학력 (조서 표기용)</label>
+            <input type="text" id="eduText" placeholder="예: 한국대학교 윤리학과">
+            <p class="field-help">학교·학과 표기용입니다. 아래 계산용 최종 학력도 별도로 선택하세요.</p>
+          </div>
+        </div>
+        <div class="grid4">
+          <div class="field">
+            <label>소속 기관 (조서 표기용)</label>
+            <input type="text" id="affiliation" placeholder="예: 가나다고등학교">
+          </div>
+          <div class="field">
+            <label>직위/직급 (조서 표기용)</label>
+            <input type="text" id="position" placeholder="예: 교사">
+          </div>
+          <div class="field">
+            <label>작성자 이름</label>
+            <input type="text" id="author" placeholder="예: 박담당">
+          </div>
+          <div class="field">
+            <label>작성자 직급</label>
+            <input type="text" id="authorRank" placeholder="예: 교육행정8급">
+          </div>
+        </div>
+        <details class="advanced-fields"><summary>호봉획정표의 추가 항목 입력 <span>해당할 때만 열어 주세요</span></summary>
+        <div class="grid4" style="margin-top:14px">
+          <div class="field"><label>제청(내신) 직위/직급 (선택)</label><input type="text" id="proposedPosition" placeholder="해당 없으면 공란"><p class="field-help">이번 인사에서 제청·내신하는 직위입니다. 현 직위와 다르면 입력하세요.</p></div>
+          <div class="field"><label>현 호봉 (선택)</label><input type="text" id="currentGrade" placeholder="예: 9호봉"></div>
+          <div class="field"><label>공제 연수 (확인 후 입력)</label><input type="text" id="deductYears" placeholder="예: 0년 0월 0일"></div>
+          <div class="field"><label>사정 호봉에 필요한 경력 연수 (확인 후 입력)</label><input type="text" id="requiredYears" placeholder="확인 전 공란"></div>
+        </div>
+        </details>
+      </div>
+    </div>
+
+    <!-- 교원자격증 -->
+    <div class="card">
+      <div class="card-head">교원자격증 <span class="card-head-note">기산호봉 산정 · 필수</span></div>
+      <div class="card-body">
+        <p class="field-intro">교원자격증에 적힌 자격종별을 선택하세요. 자격증이 여러 장이면 이번 임용에 적용되는 자격을 확인해 주세요.</p>
+        <div id="qualGrid"></div>
+      </div>
+    </div>
+
+    <!-- 최종 학력 -->
+    <div class="card">
+      <div class="card-head">최종 학력 <span class="card-head-note">학령 산정 · 필수</span></div>
+      <div class="card-body">
+        <p class="field-intro">졸업증명서의 최종 학력을 기준으로 선택하세요. 아래의 학령가감은 선택 후 자동 계산됩니다.</p>
+        <div class="radio-grid" id="eduGrid"></div>
+      </div>
+    </div>
+
+    <!-- 가산연수 -->
+    <div class="card">
+      <div class="card-head">가산연수 <span class="card-head-note">해당하는 경우만 선택</span></div>
+      <div class="card-body">
+        <label class="check-card" id="ccSabeom">
+          <input type="checkbox" id="isSabeom" onchange="renderBonusInfo()">
+          <div>
+            <div class="cc-label">사범계학교(대학에 설치된 교육계학과 포함) 졸업자</div>
+            <div class="cc-desc">수학연한 2년 이상의 사범계 학교 졸업 시 +1년 (특수교 해당자는 +2년 적용)</div>
+          </div>
+        </label>
+        <label class="check-card" id="ccSpecial">
+          <input type="checkbox" id="isSpecial" onchange="renderBonusInfo()">
+          <div>
+            <div class="cc-label">특수학교(특수학급) 또는 특수교육지원센터 근무 교원</div>
+            <div class="cc-desc">사범계 졸업자: +2년 / 비사범계 졸업자: +1년</div>
+          </div>
+        </label>
+        <div id="bonusInfo"></div>
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <div></div>
+      <button class="btn-primary" onclick="toStep2()">경력 검토로 계속</button>
+    </div>
+  </div>
+
+  <!-- ════ STEP 2 ════ -->
+  <div id="step2" class="screen-only" style="display:none">
+    <div class="step-intro"><div class="step-help-heading"><span class="eyebrow">STEP 02 / 경력 검토</span><button type="button" id="stepHelp2" class="step-help-button" onclick="openStepHelp(2, this)" aria-haspopup="dialog" aria-controls="stepHelpDialog">이 단계 도움말</button></div><h2>근무기간과 환산율을 확인하세요</h2><p>근무기간별로 한 줄씩 입력합니다. 원본 대조 → 증빙 확인 → 환산율 선택 순서로 검토하세요. <strong>추천 후보는 최종 확정이 아닙니다.</strong></p></div>
+    <details class="task-guide guide-standalone" id="guideCareers">
+      <summary>경력 추가·증빙 확인·환산율 추천 순서</summary>
+      <div class="guide-body">
+        <p><strong>용어 먼저 보기:</strong> <strong>원경력기간</strong>은 입력한 근무기간에서 산입 원칙에 따라 계산한 기간이고, <strong>환산율</strong>은 그중 호봉 산정에 인정하는 비율입니다. 이 비율을 적용한 기간이 <strong>환산경력</strong>입니다.</p>
+        <ol>
+          <li><strong>빠진 경력은 + 경력 직접 추가.</strong> 증명서의 근무기간별로 1행씩 작성하고, 기관명과 직종을 서로 다른 칸에 넣으세요. 예: 근무학교(회사) <strong>가나다고등학교</strong> / 직종 <strong>기간제교사</strong>. 중간에 끊긴 근무기간을 임의로 한 행에 합치지 마세요.</li>
+          <li><strong>날짜와 종료일 산입을 확인하세요.</strong> 예: 시작일 <strong>2025-03-01</strong>, 종료일 <strong>2026-02-28</strong>. 원본 날짜를 그대로 넣고 마지막 날 포함 여부를 따로 확인하세요. 직접 추가한 행은 기본 해제, 문서에서 가져온 행은 기본 체크되어 있으므로 그대로 확정하지 마세요. 자세한 원칙은 아래 <strong>기간 계산 원칙과 적용 법령 보기</strong>에서 확인합니다.</li>
+          <li><strong>증빙을 먼저 확인하세요.</strong> 각 행의 <strong>증빙에서 확인한 내용</strong>을 열고 기관의 법적 형태·근로관계·등록/신고 등 화면에 나오는 항목을 확인한 범위에서 선택한 뒤 <strong>입력한 경력으로 환산율 추천</strong>을 누르세요. 모르는 사항을 확인된 것으로 선택하지 마세요. 자격 일치·임면보고 등 추천 근거의 필수 확인사항은 별도로 원본과 대조해야 합니다.</li>
+          <li><strong>후보와 실제 선택값을 구분하세요.</strong> 후보·근거·필수 확인사항을 읽고 증빙과 일치할 때 후보 버튼이나 <strong>경력 환산율 선택</strong>에서 적용 유형을 고르세요. 후보 버튼을 누르면 직접 선택값으로 적용됩니다. 위쪽 <strong>추천 유지</strong>는 미확인 경력을 자동 확정하는 기능이 아닙니다. <strong>환산율 초기화</strong>는 추천으로 적용된 환산유형을 비우므로 다시 선택해야 합니다.</li>
+          <li><strong>확인 필요 표시를 해결하세요.</strong> 주황색 안내와 필요한 증빙을 읽으세요. 교습소 경력의 <strong>확인 필요</strong> 버튼은 추가 안내창을 엽니다. 입력을 바꿨다는 안내가 나오면 증빙과 추천을 다시 검토하고, 시수·근무시간 입력란이 나타나면 원본을 보고 채우세요.</li>
+          <li><strong>빈 행·중복 행은 삭제하고 결과 확인하기.</strong> 각 행의 <strong>삭제</strong>는 해당 경력만 지웁니다. 결과로 넘어가지 못하면 안내창의 행 번호를 찾아 환산율·시작일·종료일·기간 순서를 수정하세요. 현재 앱은 경력 1건 이상이 있어야 결과를 계산합니다.</li>
+        </ol>
+        <p><strong>입력 화면 합계만으로 끝내지 마세요.</strong> 3단계에서 중복기간 조정과 최종 산정 결과를 다시 확인합니다. 기본정보가 틀렸다면 <strong>자료 입력으로 돌아가기</strong>로 수정할 수 있습니다.</p>
+      </div>
+    </details>
+    
+    <!-- 현행 법령 환산율 추천 리뷰 바 -->
+    <div class="ai-review-bar" id="aiReviewBar">
+      <div class="arb-title">경력환산율 후보가 있습니다</div>
+      <div class="arb-sub" id="aiReviewSub">공무원보수규정과 교육부 예규의 확인조건을 적용했습니다. 각 항목의 근거와 확인사항을 검토해 주세요.</div>
+      <div class="arb-actions">
+        <button class="arb-btn accept" onclick="acceptAllAiSuggestions()">추천 유지</button>
+        <button class="arb-btn reject" onclick="clearAllAiSuggestions()">환산율 초기화</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">경력 목록 <span class="card-head-note">원본 대조 후 확정</span></div>
+      <div class="card-body">
+        <details class="rule-details"><summary>기간 계산 원칙과 적용 법령 보기</summary>
+        <div class="law-snapshot">
+          <strong>경력분류 관련 법령 자료 확인일: 2026-09-26</strong><br>
+          공무원보수규정 [시행 2026.8.1.] 제8조·별표 15·22~26 · 교육부 예규 제97호 [2025.4.23.] · 인사혁신처 예규 제220호 [2026.8.1.]<br>
+          추천은 법정 요건 확인을 돕는 기능이며, 자격 일치·임면보고·전력조회·심의회가 필요한 경력은 사용자가 증빙을 확인해야 확정됩니다.
+        </div>
+        <div class="info-box blue">
+          <strong>⚠ 기간 계산 원칙</strong><br>
+          • 원칙은 <strong>임용일 산입·퇴직일 제외</strong>입니다. 기간제 계약만료일·군 전역일처럼 산입 대상이면 각 경력의 <strong>종료일 산입</strong>을 체크하세요.<br>
+          • 원경력기간은 <strong>역(曆)에 의한 계산</strong>으로 실제 달력의 연·월·일 차이를 산정하고, 환산 후 12월=1년·30일=1월로 정리합니다.<br>
+          • 경력·학력이 중복되면 법령 기준에 따라 <strong>유리한 경력 1개만 자동 산입</strong>합니다. 날짜는 YYYY-MM-DD 형식으로 입력하세요.
+        </div>
+        </details>
+        <div id="careerList"></div>
+        <button class="btn-add" onclick="addCareer()">+ 경력 직접 추가</button>
+      </div>
+    </div>
+
+    <div id="totalBar" class="total-bar" style="display:none">
+      <div class="tl">현재 환산경력 합계 (소수점 이하 절사 적용)</div>
+      <div class="tv" id="totalVal">—</div>
+      <div class="ts" id="totalSub"></div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn-secondary" onclick="goStep(1)">자료 입력으로 돌아가기</button>
+      <button class="btn-primary" id="btnStep3" onclick="toStep3()">결과 확인하기</button>
+    </div>
+  </div>
+
+  <!-- ════ STEP 3 (Screen Result) ════ -->
+  <div id="step3" style="display:none">
+    <div class="screen-only">
+      <div class="step-intro"><div class="step-help-heading"><span class="eyebrow">STEP 03 / 결과 확인</span><button type="button" id="stepHelp3" class="step-help-button" onclick="openStepHelp(3, this)" aria-haspopup="dialog" aria-controls="stepHelpDialog">이 단계 도움말</button></div><h2>산정 결과를 원본과 대조하세요</h2><p>산정 호봉·잔여기간·중복 조정·잠정 환산율을 검토한 뒤 엑셀과 PDF를 각각 저장하세요.</p></div>
+      <details class="task-guide guide-standalone" id="guideExport">
+        <summary>결과 검토·엑셀/PDF 저장·다시 시작하는 방법</summary>
+        <div class="guide-body">
+          <p><strong>계산 흐름 이해하기:</strong> <strong>기산호봉</strong>은 선택한 교원자격을 바탕으로 계산을 시작하는 호봉입니다. 화면은 여기에 학력에 따른 가감·해당 가산연수·환산경력을 반영해 산정 과정을 보여 줍니다. <strong>잔여기간</strong>은 호봉에 반영한 연수 뒤에 남는 월·일로, 다음 승급 시기 검토에 쓰입니다.</p>
+          <ol>
+            <li><strong>계산 근거를 확인하세요.</strong> 대상자·임용일·자격·학력과 산정 호봉, 잔여기간, 호봉 산정 과정, 경력 환산 상세내역을 원본과 대조하세요. 중복기간의 조정 내역과 <strong>후보·확인 필요</strong> 등 잠정 환산율이 남아 있는지 확인해야 합니다.</li>
+            <li><strong>틀린 값은 앱에서 수정하세요.</strong> <strong>경력 수정하기</strong>로 2단계에 돌아가 수정하고 <strong>결과 확인하기</strong>를 다시 누르세요. 기본정보는 위쪽 <strong>자료 입력</strong> 단계에서 고칩니다.</li>
+            <li><strong>엑셀 저장</strong>은 .xlsx, <strong>PDF 저장</strong>은 .pdf 문서를 만듭니다. 필요한 형식을 각각 눌러 저장 창에서 위치·파일명을 선택하고 <strong>저장 완료</strong> 안내를 확인하세요. 저장 창을 취소하면 파일이 저장되지 않습니다.</li>
+            <li><strong>실제 파일도 열어 확인하세요.</strong> 선택한 폴더에서 이름·날짜·경력·호봉·출력 누락 여부를 확인하세요. 저장 오류가 나면 쓰기 가능한 다른 폴더를 선택하고, 같은 이름의 파일이 열려 있으면 닫은 후 다시 저장하세요.</li>
+            <li><strong>닫기·초기화 전에 저장하세요.</strong> 자동 임시저장은 없습니다. <strong>처음부터 다시</strong>는 확인 후 입력값·파일 선택·분석 검토표를 모두 비워 다른 대상자를 시작하게 합니다. 이미 저장한 파일과 원본은 지우지 않습니다.</li>
+          </ol>
+          <p><strong>저장 문서와 앱은 연결되어 있지 않습니다.</strong> 엑셀·PDF의 내용을 수정해도 앱에 자동 반영되지 않습니다. 저장 파일은 결과 문서이지 입력 상태를 그대로 이어가는 작업 파일이 아니므로, 앱에서 수정한 뒤 새 결과를 다시 저장하세요.</p>
+        </div>
+      </details>
+      <div class="result-hero">
+        <div class="result-hero-inner">
+          <div>
+            <div class="result-sub">최종 산정 결과 · <span id="rHireDate"></span></div>
+            <div class="result-name" id="rName">—</div>
+            <div class="result-sub" id="rQual"></div>
+          </div>
+          <div class="result-grade">
+            <div class="result-grade-label">초임호봉</div>
+            <div class="result-grade-num" id="rGradeNum">—</div>
+            <div class="result-grade-unit">호봉</div>
+          </div>
+        </div>
+        <div class="remain-bar" id="rRemain" style="display:none">
+          <span>⏱ 잔여기간 (다음 호봉승급 기산일 반영): </span><strong id="rRemainVal"></strong>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">호봉 산정 과정</div>
+        <div class="card-body" id="calcProcess"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">경력 환산 상세내역</div>
+        <div class="card-body" style="overflow-x:auto">
+          <table class="screen-table">
+            <thead>
+              <tr>
+                <th>경력 내용(종류)</th>
+                <th>근무기간</th>
+                <th style="text-align:center">원경력기간</th>
+                <th style="text-align:center">환산율</th>
+                <th style="text-align:center">환산경력</th>
+              </tr>
+            </thead>
+            <tbody id="careerTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="info-box amber" style="margin-bottom:8px">
+        <strong>호봉획정표 출력 전 확인</strong><br>
+        첨부하신 교육공무원 인사기록 및 인사사무 처리 규칙 별지 제17호서식 항목 순서로 PDF·엑셀을 생성합니다. 경력이 13건을 넘으면 다음 장에 이어집니다. 공제 연수와 사정 호봉에 필요한 경력 연수는 근거 없이 자동 추정하지 않으므로 확인 후 입력해 주세요.
+      </div>
+
+      <p class="guide-caution export-reminder">자동 임시저장이 없습니다. 닫기·초기화 전에 필요한 엑셀·PDF를 각각 저장하고, 저장 완료와 실제 파일을 확인하세요.</p>
+      <div class="btn-row no-print">
+        <button class="btn-secondary" onclick="goStep(2)">경력 수정하기</button>
+        <div style="display:flex;gap:8px">
+          <button class="btn-secondary" onclick="resetAll()">처음부터 다시</button>
+          <button class="btn-primary" id="btnRealExcel" onclick="downloadExcel()">엑셀 저장</button>
+          <button class="btn-primary" id="btnPdf" onclick="downloadPDF()">PDF 저장</button>
+        </div>
+      </div>
+    </div>
+    
+    <!-- 별지 제17호서식 호봉획정표 미리보기 -->
+    <div id="printArea">
+      <div style="font-size:10px;margin-bottom:4px">■ 교육공무원 인사기록 및 인사사무 처리 규칙 [별지 제17호서식]</div>
+      <div class="print-title">호봉획정표</div>
+      
+      <table class="formal-table">
+        <tr>
+          <th width="16%">소속</th><td width="32%" id="pAffiliation"></td>
+          <th width="26%">제청(내신) 직위(직급)</th><th width="26%">현 직위(직급)</th>
+        </tr>
+        <tr>
+          <th>성명</th><td id="pName"></td><td id="pProposedPosition"></td><td id="pPosition"></td>
+        </tr>
+        <tr>
+          <th>학력</th><td id="pEduText"></td><th>현 호봉</th><td id="pGrade"></td>
+        </tr>
+      </table>
+
+      <table class="formal-table">
+        <thead>
+          <tr><th colspan="2">경력기간</th><th rowspan="2">경력 내용</th><th rowspan="2">경력 연수</th><th rowspan="2">환산율</th><th rowspan="2">환산 연수</th><th rowspan="2">비고</th></tr>
+          <tr><th>부터</th><th>까지</th></tr>
+        </thead>
+        <tbody id="pCareerBody">
+          <!-- JS 렌더링 영역 -->
+        </tbody>
+      </table>
+
+      <table class="formal-table">
+        <tr><th>환산 총경력 연수</th><th>공제 연수</th><th>남은 연수</th><th>사정 호봉</th><th>사정 호봉에 필요한 경력 연수</th></tr>
+        <tr><td id="pCareerTotal"></td><td id="pDeductYears"></td><td id="pRemain"></td><td id="pFinalGrade"></td><td id="pRequiredYears"></td></tr>
+      </table>
+
+      <div class="print-footer">
+        <div class="print-sign">
+          작성자 &nbsp; 직위(직급) <span id="pAuthorRank"></span> &nbsp; 성명 <span id="pAuthor"></span> &nbsp;(인)
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer class="no-print" style="text-align:center;color:#9ca3af;font-size:11px;padding:24px;border-top:1px solid #e5e7eb;margin-top:16px">
+  법령 자료 확인일 <span id="lawSnapshotDate">2026-09-26</span> · 추천 결과는 증빙과 현행 지침을 확인해 확정하세요 · 모든 문서 처리는 이 PC에서만 수행됩니다
+</footer>
+
+<!-- 단계별 읽기 도움말: 실제 입력값과 단계는 변경하지 않습니다. -->
+<dialog id="stepHelpDialog" class="step-help-dialog no-print" aria-labelledby="stepHelpTitle" aria-describedby="stepHelpDescription">
+  <div class="step-help-top">
+    <div><span class="eyebrow">사용 안내</span><h2 id="stepHelpTitle">단계 도움말</h2></div>
+    <button type="button" id="stepHelpClose" class="btn-secondary" onclick="document.getElementById('stepHelpDialog').close()" autofocus>닫기</button>
+  </div>
+  <div class="step-help-navigation">
+    <p id="stepHelpDescription">도움말만 바뀌며, 작업 중인 단계와 입력값은 그대로 유지됩니다. Esc 키로도 닫을 수 있습니다.</p>
+    <div class="step-help-tabs" role="group" aria-label="읽을 단계 도움말 선택">
+      <button type="button" data-help-step="1" onclick="openStepHelp(1)" aria-pressed="false">1. 자료 입력</button>
+      <button type="button" data-help-step="2" onclick="openStepHelp(2)" aria-pressed="false">2. 경력 검토</button>
+      <button type="button" data-help-step="3" onclick="openStepHelp(3)" aria-pressed="false">3. 결과·저장</button>
+    </div>
+  </div>
+  <div id="stepHelpBody" class="step-help-body" tabindex="0" role="region" aria-label="단계별 사용 안내 내용"></div>
+</dialog>
+
+<!-- Custom Modal -->
+<div id="customModal" class="no-print">
+  <div class="modal-content">
+    <div id="modalText" class="modal-text"></div>
+    <div class="modal-actions">
+      <button id="modalBtnCancel" class="btn-secondary" style="display:none; color: #6b7280; background: #f3f4f6;">취소</button>
+      <button id="modalBtnOk" class="btn-primary" style="background: #1a3a6b; color: #fff;">확인</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════
+// 로컬 Python 백엔드 주소
+// ══════════════════════════════════════════════════════
+const OCR_API_BASE_URL = window.location.protocol === 'file:' ? 'http://127.0.0.1:8765' : window.location.origin;
+const IS_TAURI = !!(window.__TAURI__ && window.__TAURI__.core && window.__TAURI__.core.invoke);
+async function invokeDesktop(command, args) {
+  return await window.__TAURI__.core.invoke(command, args);
+}
+
+async function openBrandChannel(event) {
+  if (!IS_TAURI) return;
+  event.preventDefault();
+  try {
+    await invokeDesktop('open_brand_channel');
+  } catch (error) {
+    showAlert('유튜브 채널을 열지 못했습니다. 인터넷 연결과 기본 브라우저를 확인해 주세요.\nhttps://www.youtube.com/@wise-gyohaeng\n' + (error.message || String(error)));
+  }
+}
+
+const STEP_HELP = {
+  1: {title:'1단계 · 자료 입력 도움말', next:'시작 방법 선택 → 기본정보 확인 → 경력 검토로 계속', guides:['guideDocument', 'guideExisting', 'guideManual', 'guideBasics']},
+  2: {title:'2단계 · 경력 검토 도움말', next:'근무기간 대조 → 증빙 확인·환산율 선택 → 결과 확인하기', guides:['guideCareers']},
+  3: {title:'3단계 · 결과 확인·저장 도움말', next:'계산 결과 대조 → 엑셀/PDF 각각 저장 → 실제 파일 확인', guides:['guideExport']}
+};
+let stepHelpOpener = null;
+
+function openStepHelp(step, opener) {
+  const help = STEP_HELP[step];
+  if (!help) return;
+  const dialog = document.getElementById('stepHelpDialog');
+  const body = document.getElementById('stepHelpBody');
+  if (!dialog.open) stepHelpOpener = opener || document.activeElement;
+  document.getElementById('stepHelpTitle').textContent = help.title;
+  document.querySelectorAll('[data-help-step]').forEach(button => {
+    button.setAttribute('aria-pressed', String(Number(button.dataset.helpStep) === Number(step)));
+  });
+  body.replaceChildren();
+  const next = document.createElement('p');
+  next.className = 'step-help-flow';
+  next.textContent = help.next;
+  body.appendChild(next);
+  help.guides.forEach(id => {
+    const guide = document.getElementById(id);
+    const section = document.createElement('section');
+    const heading = document.createElement('h3');
+    heading.textContent = guide.querySelector('summary').textContent;
+    // 도움말 원문은 텍스트 목록만 포함합니다. 원문 ID나 입력 컨트롤은 복제하지 않습니다.
+    const content = guide.querySelector('.guide-body').cloneNode(true);
+    content.querySelectorAll('[id]').forEach(node => node.removeAttribute('id'));
+    section.append(heading, content);
+    body.appendChild(section);
+  });
+  body.scrollTop = 0;
+  if (!dialog.open) {
+    dialog.showModal();
+    document.getElementById('stepHelpClose').focus();
+  }
+}
+
+document.getElementById('stepHelpDialog').addEventListener('close', () => {
+  if (stepHelpOpener && stepHelpOpener.isConnected) stepHelpOpener.focus({preventScroll:true});
+  stepHelpOpener = null;
+});
+
+// ══════════════════════════════════════════════════════
+// Custom Modal Logic
+// ══════════════════════════════════════════════════════
+function showAlert(msg) {
+  document.getElementById("modalText").textContent = msg;
+  document.getElementById("modalBtnCancel").style.display = "none";
+  const modal = document.getElementById("customModal");
+  modal.classList.add("show");
+  document.getElementById("modalBtnOk").onclick = () => modal.classList.remove("show");
+}
+
+function showConfirm(msg, onConfirm) {
+  document.getElementById("modalText").textContent = msg;
+  document.getElementById("modalBtnCancel").style.display = "block";
+  const modal = document.getElementById("customModal");
+  modal.classList.add("show");
+  document.getElementById("modalBtnCancel").onclick = () => modal.classList.remove("show");
+  document.getElementById("modalBtnOk").onclick = () => {
+    modal.classList.remove("show");
+    if(onConfirm) onConfirm();
+  };
+}
+
+function showTutoringReviewInfo() {
+  showAlert("교습소 경력 확인 필요\n\n50% 이내: 근무 당시 교육감에게 신고된 교습소에서 교습자로 근무했고, 관할 세무서의 사업자등록·소득세·부가세 신고내역이 확인되는 경우.\n\n30% 이내: 교육감에게 신고하지 않은 교습소라도 근로소득세 납입증명서 등 객관적 자료로 교습자 근무경력이 입증되는 경우.\n\n현재 50%는 검토용 후보입니다. 교육지원청의 당시 신고 이력과 사업자·세무자료를 확인하고 30% 또는 불인정 사유가 드러나면 담당자가 비율을 수정해 주세요.\n\n근거: 교육부 예규 제97호 별표 1, https://law.go.kr/flDownload.do?flSeq=151251813");
+}
+
+// ══════════════════════════════════════════════════════
+// 데이터 상수
+// ══════════════════════════════════════════════════════
+const QUALS = [
+  {id:"정교사1급", label:"정교사(1급)",       base:9},
+  {id:"정교사2급", label:"정교사(2급)",       base:8},
+  {id:"준교사",   label:"준교사",             base:5},
+  {id:"전문상담교사1급", label:"전문상담교사(1급)", base:9},
+  {id:"전문상담교사2급", label:"전문상담교사(2급)", base:8},
+  {id:"사서교사1급", label:"사서교사(1급)",   base:9},
+  {id:"사서교사2급", label:"사서교사(2급)",   base:8},
+  {id:"실기교사",  label:"실기교사",           base:5},
+  {id:"보건교사1급", label:"보건교사(1급)",   base:9},
+  {id:"보건교사2급", label:"보건교사(2급)",   base:8},
+  {id:"영양교사1급", label:"영양교사(1급)",   base:9},
+  {id:"영양교사2급", label:"영양교사(2급)",   base:8},
+  {id:"관리전문직", label:"교장·원장·교감·원감·교육장·장학(연구)직", base:9},
+];
+
+const EDUS = [
+  {id:"uni4", label:"4년제 일반대학 졸업",                  total:16},
+  {id:"edu4", label:"교육대학·사범대학 졸업 (4년)",          total:16},
+  {id:"uni6", label:"6년제 대학 졸업 (의대·치대·한의대·수의대)", total:18},
+  {id:"col3", label:"전문대학 졸업 3년 (간호·방사선·물리치료 등)", total:15},
+  {id:"col2", label:"전문대학 졸업 2년",                    total:14},
+  {id:"credit4", label:"학점은행제·독학사 학사학위",          total:16},
+  {id:"credit3", label:"학점은행제 전문학사 3년",             total:15},
+  {id:"credit2", label:"학점은행제 전문학사 2년",             total:14},
+  {id:"high", label:"고등학교 졸업 (대학 미진학)",           total:12},
+];
+
+const CAREER_TYPES = [
+  {id:"tutoringPending", label:"교습소 경력 (50% 후보·확인 필요)", rate:0.5, group:"③ 유사경력 – 그 밖의 경력"},
+  {id:"teacher10", label:"기존 획정표상 교원경력 100% (공·사립 세부확인)", rate:1.0, group:"① 교원경력"},
+  {id:"pub10",   label:"국·공립학교 교원 (기간제 포함, 자격 일치)",    rate:1.0, group:"① 교원경력"},
+  {id:"priv10",  label:"사립학교 교원 (관할청 보고, 자격 일치)",        rate:1.0, group:"① 교원경력"},
+  {id:"mis8",    label:"기간제교원 자격-학교급 불일치 (예:중등→초등)",   rate:0.8, group:"① 교원경력"},
+  {id:"unrep5",  label:"사립학교 교원 (관할청 미보고)",                 rate:0.5, group:"① 교원경력"},
+  {id:"dc10",    label:"어린이집 교원 (유치원 자격 보유)",               rate:1.0, group:"① 교원경력"},
+  {id:"dis8",    label:"장애영유아어린이집 교원 (특수교원 자격)",         rate:0.8, group:"① 교원경력"},
+  {id:"life10",  label:"학교형태 평생교육시설 교원",                    rate:1.0, group:"① 교원경력"},
+  {id:"kor10",   label:"한국학교 교원 (재외국민 교육지원법)",            rate:1.0, group:"① 교원경력"},
+  {id:"gov10",   label:"국가·지방공무원 (현역 군복무 포함)",            rate:1.0, group:"② 공무원경력"},
+  {id:"emp8",    label:"고용직 공무원",                                 rate:0.8, group:"② 공무원경력"},
+  {id:"sf10",    label:"유·초·중등 강사 (전일제·종일제, 1일 8시간↑)",  rate:1.0, group:"③ 유사경력 – 강사"},
+  {id:"stAuto",  label:"유·초·중등 시간제 강사 (주당시수 자동계산)",    rate:null, group:"③ 유사경력 – 강사", calc:"schoolHourly"},
+  {id:"st3",     label:"유·초·중등 시간제 강사 (주 12시간↓ 또는 시수 불명)", rate:0.3, group:"③ 유사경력 – 강사"},
+  {id:"u5",      label:"대학 시간강사 (주 5시간 이하)",                  rate:0.5, group:"③ 유사경력 – 강사"},
+  {id:"u6",      label:"대학 시간강사 (주 6시간)",                      rate:0.6, group:"③ 유사경력 – 강사"},
+  {id:"u7",      label:"대학 시간강사 (주 7시간)",                      rate:0.7, group:"③ 유사경력 – 강사"},
+  {id:"u8",      label:"대학 시간강사 (주 8시간)",                      rate:0.8, group:"③ 유사경력 – 강사"},
+  {id:"u9",      label:"대학 시간강사 (주 9시간)",                      rate:0.9, group:"③ 유사경력 – 강사"},
+  {id:"u10",     label:"대학 시간강사 (주 10시간↑)",                    rate:1.0, group:"③ 유사경력 – 강사"},
+  {id:"res10",   label:"대학·정부출연·특정연구기관 연구원",             rate:1.0, group:"③ 유사경력 – 연구"},
+  {id:"ta10",    label:"대학원 연구전담 조교",                           rate:1.0, group:"③ 유사경력 – 연구"},
+  {id:"ms10",    label:"석사학위 취득 수학기간",                         rate:1.0, group:"③ 유사경력 – 연구"},
+  {id:"ph10",    label:"박사학위 취득 수학기간 (최대 3년)",               rate:1.0, group:"③ 유사경력 – 연구", maxMonths:36},
+  {id:"sameDegree8", label:"동등 수준 추가 학위 수학연수",                rate:0.8, group:"③ 유사경력 – 연구"},
+  {id:"jab8",    label:"잡급직원 규정상 잡급직원",                       rate:0.8, group:"③ 유사경력 – 국가·지방기관"},
+  {id:"tmp8",    label:"잡급규정 시행 전 임시직·촉탁·잡급 (2월↑, 인건비)", rate:0.8, group:"③ 유사경력 – 국가·지방기관"},
+  {id:"tmp5",    label:"임시직·촉탁·잡급 등 (3월↑, 5할 대상)",          rate:0.5, group:"③ 유사경력 – 국가·지방기관"},
+  {id:"sch5",    label:"학교회계직원 (관련 교원자격 취득 전)",             rate:0.5, group:"③ 유사경력 – 국가·지방기관"},
+  {id:"sch8",    label:"학교회계직원 (관련 교원자격 취득 후)",             rate:0.8, group:"③ 유사경력 – 국가·지방기관"},
+  {id:"mil10",   label:"예술·체육요원/산업기능요원/전문연구요원/승선예비역", rate:1.0, group:"③ 유사경력 – 그 밖의 경력", maxMonths:36},
+  {id:"rehab8",  label:"장애인 지역사회재활시설 근무 (특수교원자격)",      rate:0.8, group:"③ 유사경력 – 그 밖의 경력"},
+  {id:"law7",    label:"변호사·법무사 법률사무 경력",                    rate:0.7, group:"③ 유사경력 – 그 밖의 경력"},
+  {id:"union7",  label:"교원단체·교원노조 근무경력",                     rate:0.7, group:"③ 유사경력 – 그 밖의 경력"},
+  {id:"alt7",    label:"대안교육 위탁교육기관 근무경력",                  rate:0.7, group:"③ 유사경력 – 그 밖의 경력"},
+  {id:"relig6",  label:"종교법인 교육활동 관련 직무",                    rate:0.6, group:"③ 유사경력 – 그 밖의 경력"},
+  {id:"pub5",    label:"공공기관·공공법인 근무 (행정·경영·연구·기술분야)", rate:0.5, group:"③ 유사경력 – 그 밖의 경력"},
+  {id:"overseas5", label:"재외교육기관·재외교육단체 근무",               rate:0.5, group:"③ 유사경력 – 그 밖의 경력"},
+  {id:"ac5",     label:"등록 학원 강사 / 신고 교습소 교습자",              rate:0.5, group:"③ 유사경력 – 그 밖의 경력"},
+  {id:"ac3",     label:"미등록 학원 강사 (객관적 증빙 있을 때)",           rate:0.3, group:"③ 유사경력 – 그 밖의 경력"},
+  {id:"corp4",   label:"회사 (상법상 합명·합자·주식·유한회사) 근무",      rate:0.4, group:"③ 유사경력 – 그 밖의 경력"},
+  {id:"oth3",    label:"그 밖의 직업경력 (재단법인·개인회사·의료기관·정당 등)", rate:0.3, group:"③ 유사경력 – 그 밖의 경력"},
+];
+
+// 공무원보수규정 별표 22 비고 4와 인사혁신처 예규 제220호에 따라
+// 단시간 비례환산이 가능한 경력. 공무원·강사·학위경력은 별도 규칙을 쓴다.
+const GENERAL_PART_TIME_TYPES = new Set([
+  "teacher10","priv10","mis8","unrep5","dc10","dis8","life10","kor10",
+  "res10","ta10","jab8","tmp8","tmp5","sch5","sch8","rehab8","law7",
+  "union7","alt7","relig6","pub5","overseas5","ac5","ac3","corp4","oth3"
+]);
+
+const LAW_SNAPSHOT = {
+  asOf:"2026-09-26",
+  salaryRule:"공무원보수규정 [시행 2026.8.1.] 제8조·별표 15·22~26",
+  educationRule:"교육부 예규 제97호 [2025.4.23.]",
+  salaryGuide:"인사혁신처 예규 제220호 [2026.8.1.]"
+};
+document.getElementById('lawSnapshotDate').textContent = LAW_SNAPSHOT.asOf;
+
+let state = { qual:"", edu:"", isSabeom:false, isSpecial:false, careers:[] };
+let ocrReflectedFields = {qual:null, edu:null};
+let careerIdSeq = 1;
+let salaryReviewData = { rows:[], documents:[], reference:{}, legal_snapshot:{} };
+let assistantState = {bundled:false, phase:'not_available', active:false};
+let assistantTimer = null;
+
+function showAssistantStatus(value) {
+  assistantState = value;
+  document.getElementById('assistantPanel').hidden = !value.bundled;
+  if (!value.bundled) return;
+  const labels = {idle:'AI 준비 대기', loading:'AI 모델 준비 중', ready:'AI 모델 준비 완료', skipped:'AI 자동 로딩 안 함', error:'AI 준비 실패', unloaded:'AI 모델 내려짐'};
+  document.getElementById('assistantStatus').textContent = (labels[value.phase] || value.phase) + ' · ' + (value.reason || '기본 규칙 기능은 계속 사용할 수 있습니다.');
+  const gib = bytes => (bytes/1073741824).toFixed(1);
+  document.getElementById('assistantMemory').textContent = value.total_bytes == null ? '메모리 조회 실패: 안전을 위해 모델을 로딩하지 않습니다.' : `총 메모리 ${gib(value.total_bytes)}GiB · 현재 가용 ${gib(value.available_bytes)}GiB · 모델 로딩에는 가용 8GiB 이상 필요`;
+  document.getElementById('assistantAuto').checked = value.auto_prepare;
+  document.getElementById('assistantPrepare').disabled = value.phase === 'loading' || value.phase === 'ready' || value.active;
+  document.getElementById('assistantUnload').disabled = !['loading','ready'].includes(value.phase) || value.active;
+  document.querySelectorAll('.assistant-candidate-button').forEach(button => button.disabled = value.phase !== 'ready' || value.active);
+}
+
+async function refreshAssistantStatus() {
+  if (!IS_TAURI) return;
+  try { showAssistantStatus(await invokeDesktop('assistant_status')); }
+  catch (error) { if(assistantState.bundled) document.getElementById('assistantStatus').textContent = 'AI 상태 확인 실패 · 기본 규칙 기능은 계속 사용할 수 있습니다.'; }
+}
+async function initAssistant() {
+  await refreshAssistantStatus();
+  if (assistantState.bundled) assistantTimer = setInterval(refreshAssistantStatus, 2000);
+}
+async function prepareAssistant() {
+  document.getElementById('assistantPrepare').disabled = true;
+  try { await invokeDesktop('prepare_assistant'); await refreshAssistantStatus(); }
+  catch(error) { showAlert('AI 준비를 시작하지 못했습니다. ' + (error.message || String(error))); await refreshAssistantStatus(); }
+}
+async function unloadAssistant() {
+  try { showAssistantStatus(await invokeDesktop('unload_assistant')); }
+  catch(error) { showAlert('AI 모델을 내리지 못했습니다. ' + (error.message || String(error))); }
+}
+async function setAssistantAuto(enabled) {
+  try { showAssistantStatus(await invokeDesktop('set_assistant_auto', {enabled})); }
+  catch(error) { showAlert('AI 자동 준비 설정을 저장하지 못했습니다. ' + (error.message || String(error))); await refreshAssistantStatus(); }
+}
+
+function assistantCandidateHtml(career) {
+  if (!assistantState.bundled) return '';
+  const result = career.assistantCandidate;
+  const candidate = result && CAREER_TYPES.find(type => type.id === result.suggested_type);
+  const text = result ? (candidate ? `${candidate.label} (${fmtRate(candidate.rate)})` : '증빙 확인 필요 · 적용 유형을 확정할 정보가 부족합니다.') : '';
+  return `<div class="assistant-candidate"><button type="button" class="btn-secondary assistant-candidate-button" onclick="recommendAssistantCandidate(${career.id}, this)" ${assistantState.phase!=='ready'||assistantState.active?'disabled':''}>4B 참고 후보 보기</button><span>규칙 추천·현재 환산율을 바꾸지 않습니다. 준비 완료 후 사용할 수 있습니다.</span>${result ? `<p role="status"><strong>4B 참고: ${escapeHtml(text)}</strong><br>자동 적용되지 않았습니다. 원본 증빙과 기존 규칙 근거를 확인한 뒤 담당자가 환산율 선택란에서 직접 선택하세요.</p>` : ''}</div>`;
+}
+
+async function recommendAssistantCandidate(id, button) {
+  const career = state.careers.find(item => item.id === id);
+  if (!career || button.disabled) return;
+  if (!career.organization?.trim() || !career.position?.trim()) return showAlert('근무학교(회사)와 직종을 각각 입력하세요.');
+  const snapshot = careerRecommendationSnapshot(career);
+  const oldText = button.textContent;
+  assistantState.active = true; showAssistantStatus(assistantState); button.textContent='4B 검토 중…';
+  try {
+    const result = await invokeDesktop('recommend_with_assistant', {organization:career.organization, position:career.position, rawText:career.evidenceText || '', verifiedFacts:normalizeVerifiedFacts(career.verifiedFacts)});
+    if (!state.careers.includes(career)) return;
+    if (snapshot !== careerRecommendationSnapshot(career)) return showAlert('AI 확인 중 입력이 바뀌었습니다. 현재 내용으로 다시 요청하세요.');
+    career.assistantCandidate = result;
+    renderCareerList();
+  } catch(error) { showAlert('4B 참고 추천을 완료하지 못했습니다. ' + (error.message || String(error)) + '\n기본 규칙 추천과 직접 입력은 계속 사용할 수 있습니다.'); }
+  finally { button.textContent=oldText; await refreshAssistantStatus(); }
+}
+
+function escapeHtml(value) {
+  return String(value ?? "").replace(/[&<>'"]/g, ch => ({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;"})[ch]);
+}
+
+// ══════════════════════════════════════════════════════
+// 날짜 계산 엔진
+// ══════════════════════════════════════════════════════
+function maskDate(el) {
+  let v = el.value.replace(/[^0-9]/g,"");
+  if(v.length >= 5) v = v.slice(0,4) + "-" + v.slice(4);
+  if(v.length >= 8) v = v.slice(0,7) + "-" + v.slice(7);
+  v = v.slice(0,10);
+  el.value = v;
+  el.classList.remove("valid","error");
+  if(v.length === 10 && isValidDate(v)) el.classList.add("valid");
+  updateAllPreviews();
+}
+
+function validateDate(el) {
+  const v = el.value.trim();
+  el.classList.remove("valid","error");
+  if(v === "") return;
+  if(v.length === 10 && isValidDate(v)) el.classList.add("valid");
+  else el.classList.add("error");
+}
+
+function parseYMD(str) {
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(str)) return null;
+  const [y,m,d] = str.split("-").map(Number);
+  return {y,m,d};
+}
+
+function daysInMonth(y, m) {
+  return new Date(Date.UTC(y, m, 0)).getUTCDate();
+}
+
+function ymdToISO(y, m, d) {
+  return `${y}-${String(m).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
+}
+
+function isValidDate(str) {
+  const p = parseYMD(str);
+  return !!p && p.m >= 1 && p.m <= 12 && p.d >= 1 && p.d <= daysInMonth(p.y, p.m);
+}
+
+// 「역에 의한 계산」: 원경력기간은 실제 달력의 연·월·일 차이로 계산한다.
+// 시작일은 산입하고, 종료일은 원칙적으로 제외한다. 계약만료일·전역일 등은 inclEnd=true로 다음 날까지 계산한다.
+function calcRaw(startStr, endStr, inclEnd) {
+  if(!isValidDate(startStr) || !isValidDate(endStr)) return null;
+  const endExclusive = inclEnd ? addDays(endStr, 1) : endStr;
+  if(startStr >= endExclusive) return null;
+
+  const s = parseYMD(startStr);
+  const e = parseYMD(endExclusive);
+  let yr = e.y - s.y;
+  let mo = e.m - s.m;
+  let da = e.d - s.d;
+
+  if(da < 0){
+    mo--;
+    const borrowMonth = e.m === 1 ? 12 : e.m - 1;
+    const borrowYear = e.m === 1 ? e.y - 1 : e.y;
+    da += daysInMonth(borrowYear, borrowMonth);
+  }
+  if(mo < 0){ yr--; mo += 12; }
+  return {months: yr*12+mo, days: da};
+}
+
+function applyRate(raw, rate) {
+  if(!raw) return null;
+  const mF = raw.months * rate;
+  const dF = raw.days * rate;
+  const wm = Math.floor(mF);
+  const fd = Math.floor((mF - wm)*30);
+  const wd = Math.floor(dF);
+  let td = fd + wd;
+  const am = Math.floor(td/30);
+  td = td % 30;
+  return {months: wm+am, days: td};
+}
+
+function sumPeriods(list) {
+  let mo=0, da=0;
+  for(const p of list){ mo+=p.months; da+=p.days; }
+  mo += Math.floor(da/30);
+  da = da % 30;
+  return {months:mo, days:da};
+}
+
+function fmtPeriod(months, days) {
+  if(months==null) return "—";
+  const y = Math.floor(months/12), m = months%12;
+  return [y>0&&y+"년", m>0&&m+"월", days>0&&days+"일"].filter(Boolean).join(" ") || "0일";
+}
+
+function fmtRate(rate) {
+  if(rate == null) return "자동계산";
+  return Math.round(rate*10)+"할 ("+Math.round(rate*100)+"%)"; 
+}
+
+function toISODate(d) {
+  return ymdToISO(d.getUTCFullYear(), d.getUTCMonth()+1, d.getUTCDate());
+}
+
+function addDays(dateStr, days) {
+  const p = parseYMD(dateStr);
+  const d = new Date(Date.UTC(p.y, p.m-1, p.d));
+  d.setUTCDate(d.getUTCDate()+days);
+  return toISODate(d);
+}
+
+function clampPeriod(raw, maxMonths) {
+  if(!raw || !maxMonths) return raw;
+  if(raw.months > maxMonths || (raw.months === maxMonths && raw.days > 0)) {
+    return {months:maxMonths, days:0};
+  }
+  return raw;
+}
+
+function calcSchoolHourlyRateForDate(dateStr, weeklyHours) {
+  const hours = Number(weeklyHours);
+  if(!hours || hours <= 12) return 0.3;
+  let avg = 40;
+  if(dateStr < "2005-03-01") avg = 44;
+  else if(dateStr < "2006-03-01") avg = 43;
+  else if(dateStr < "2012-03-01") avg = 42;
+  return Math.min(1, hours / avg);
+}
+
+function calcGeneralPartTimeFactor(typeId, weeklyHours) {
+  if(!GENERAL_PART_TIME_TYPES.has(typeId)) return 1;
+  const hours = Number(weeklyHours);
+  if(!hours) return 1;
+  if(hours < 15) return 0;
+  return Math.min(1, hours / 40);
+}
+
+function applyCareerRule(raw, opt, c, segmentStart) {
+  if(!raw || !opt) return null;
+  const capped = clampPeriod(raw, opt.maxMonths);
+  if(opt.calc === "schoolHourly") {
+    return applyRate(capped, calcSchoolHourlyRateForDate(segmentStart || c.start, c.weeklyHours));
+  }
+  return applyRate(capped, opt.rate * calcGeneralPartTimeFactor(opt.id, c.generalWeeklyHours));
+}
+
+function getCareerDisplayRate(opt, c) {
+  if(!opt) return 0;
+  if(opt.calc === "schoolHourly") return calcSchoolHourlyRateForDate(c.start || "2012-03-01", c.weeklyHours);
+  return opt.rate * calcGeneralPartTimeFactor(opt.id, c.generalWeeklyHours);
+}
+
+function getCareerRaw(c) {
+  return calcRaw(c.start, c.end, !!c.inclEnd);
+}
+
+function getCareerEndExclusive(c) {
+  return c.inclEnd ? addDays(c.end, 1) : c.end;
+}
+
+function splitCareerSegments(c) {
+  const opt = CAREER_TYPES.find(t=>t.id===c.type);
+  if(!opt || !isValidDate(c.start) || !isValidDate(c.end)) return [];
+  const endExclusive = getCareerEndExclusive(c);
+  if(c.start >= endExclusive) return [];
+  if(opt.calc !== "schoolHourly") return [{start:c.start, end:endExclusive}];
+  const cuts = [c.start, endExclusive, "2005-03-01", "2006-03-01", "2012-03-01"]
+    .filter(d => d > c.start && d < endExclusive)
+    .sort();
+  const points = [c.start, ...cuts, endExclusive];
+  return points.slice(0,-1).map((start,i)=>({start, end:points[i+1]}));
+}
+
+function buildRecognizedDetails() {
+  const base = state.careers.map(c => {
+    const opt = CAREER_TYPES.find(t=>t.id===c.type);
+    if(!opt || !isValidDate(c.start) || !isValidDate(c.end)) return null;
+    const raw = getCareerRaw(c);
+    if(!raw) return null;
+    const convOriginal = applyCareerRule(raw, opt, c, c.start);
+    return {...c, opt, label:opt.label, group:opt.group, rate:getCareerDisplayRate(opt,c), raw, convOriginal, conv:{months:0,days:0}, recognizedSegments:[], overlapExcluded:false};
+  }).filter(Boolean);
+
+  const endpoints = Array.from(new Set(base.flatMap(d => splitCareerSegments(d).flatMap(s => [s.start, s.end])))).sort();
+  const byId = Object.fromEntries(base.map(d => [d.id, d]));
+
+  for(let i=0; i<endpoints.length-1; i++) {
+    const start = endpoints[i], end = endpoints[i+1];
+    if(start >= end) continue;
+    const active = base.filter(d => d.start < end && getCareerEndExclusive(d) > start);
+    if(active.length === 0) continue;
+    active.sort((a,b) => getCareerDisplayRate(b.opt,b) - getCareerDisplayRate(a.opt,a));
+    const chosen = active[0];
+    active.slice(1).forEach(d => d.overlapExcluded = true);
+    const raw = calcRaw(start, end, false);
+    const conv = applyCareerRule(raw, chosen.opt, chosen, start);
+    chosen.conv = sumPeriods([chosen.conv, conv]);
+    chosen.recognizedSegments.push({start, end:addDays(end,-1), raw, conv});
+  }
+
+  base.forEach(d => {
+    if(d.recognizedSegments.length === 0) d.overlapExcluded = true;
+  });
+  return base;
+}
+
+// ══════════════════════════════════════════════════════
+// 렌더링 엔진
+// ══════════════════════════════════════════════════════
+function renderRadios(containerId, items, stateKey, sub_fn) {
+  const g = document.getElementById(containerId);
+  g.innerHTML = "";
+  if (!g.classList.contains("radio-grid")) {
+      g.classList.add("radio-grid");
+  }
+  items.forEach(item => {
+    const d = document.createElement("button");
+    d.type = "button";
+    d.className = "radio-card" + (state[stateKey]===item.id?" selected":"");
+    d.setAttribute("aria-pressed", state[stateKey]===item.id ? "true" : "false");
+    d.innerHTML = `<span class="radio-dot"></span><div><div class="rc-label">${item.label}</div><div class="rc-sub">${sub_fn(item)}</div></div>`;
+    d.onclick = () => { state[stateKey]=item.id; ocrReflectedFields[stateKey]=null; initStep1Radios(); };
+    g.appendChild(d);
+  });
+}
+
+function initStep1Radios() {
+  const qg = document.getElementById("qualGrid");
+  qg.innerHTML = "";
+  qg.className = "";
+  
+  const groups = {};
+  QUALS.forEach(q => {
+      const key = `${q.base}호봉 기산 교원자격증`;
+      (groups[key] = groups[key] || []).push(q);
+  });
+  
+  Object.entries(groups).forEach(([titleText, items], idx) => {
+    const title = document.createElement("div");
+    title.className = "qualification-group-title";
+    if(idx === 0) title.style.marginTop = "0";
+    title.textContent = titleText;
+    qg.appendChild(title);
+    
+    const grid = document.createElement("div");
+    grid.className = "radio-grid";
+    
+    items.forEach(item => {
+      const d = document.createElement("button");
+      d.type = "button";
+      d.className = "radio-card" + (state.qual===item.id?" selected":"");
+      d.setAttribute("aria-pressed", state.qual===item.id ? "true" : "false");
+      d.innerHTML = `<span class="radio-dot"></span><div><div class="rc-label">${item.label}</div></div>`;
+      d.onclick = () => { state.qual = item.id; ocrReflectedFields.qual=null; initStep1Radios(); };
+      grid.appendChild(d);
+    });
+    qg.appendChild(grid);
+  });
+
+  renderRadios("eduGrid", EDUS, "edu", e => {
+    const adj = e.total-16;
+    return `학령: ${e.total}년 → 학령가감: ${adj>=0?"+":""}${adj}년`;
+  });
+  markOcrReflectedSelections();
+}
+
+function markOcrReflectedSelections() {
+  for (const field of ['qual','edu']) {
+    if (!ocrReflectedFields[field] || ocrReflectedFields[field] !== state[field]) continue;
+    const card = document.querySelector(`#${field==='qual'?'qualGrid':'eduGrid'} .radio-card.selected`);
+    if (!card) continue;
+    card.classList.add('ocr-reflected');
+    const label=document.createElement('small');label.className='ocr-reflected-label';label.textContent='문서에서 반영 · 원본 확인';
+    card.appendChild(label);
+  }
+}
+function highlightOcrSelection(field, scroll=false) {
+  const card=document.querySelector(`#${field==='qual'?'qualGrid':'eduGrid'} .radio-card.selected`);
+  if (!card) return;
+  if (scroll) card.scrollIntoView({block:'center',behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});
+  if (ocrReflectedFields[field] !== state[field]) return;
+  card.classList.remove('ocr-reflection-pulse');void card.offsetWidth;card.classList.add('ocr-reflection-pulse');
+}
+function ocrCompletionHtml(reflected, careerCount, reviewNote='') {
+  const detail = careerCount ? `이번 문서에서 근무경력 ${careerCount}개를 추가했습니다. 2단계에서 원본과 대조하세요.` : '이번 문서에서 추가된 근무경력은 없습니다. 졸업증명서·교원자격증만 읽었다면 정상입니다.';
+  if (!reflected.length && !careerCount) return `<span style="color:#b45309">문서 분석은 끝났지만 자동으로 반영할 자격·학력·근무경력을 찾지 못했습니다.</span><br>원본 선명도와 서류 종류를 확인해 다시 스캔하거나 직접 입력하기로 보완하세요.${reviewNote}`;
+  const buttons=['qual','edu'].filter(field=>ocrReflectedFields[field]).map(field=>`<button type="button" class="ocr-reflection-link" onclick="highlightOcrSelection('${field}', true)">${field==='qual'?'교원자격증':'학력'} 확인</button>`).join('');
+  const main=reflected.length ? `문서에서 ${reflected.map(escapeHtml).join(' · ')} 항목을 반영했습니다.` : '문서에서 근무경력을 읽어 반영했습니다.';
+  return `<span style="color:#047857"><strong>✅ ${main}</strong></span>${buttons}<br>${detail}<br>아래 성명·임용일·자격·학력을 확인하고 <strong>경력 검토로 계속</strong>을 누르세요.${reviewNote}`;
+}
+
+function renderBonusInfo() {
+  state.isSabeom = document.getElementById("isSabeom").checked;
+  state.isSpecial = document.getElementById("isSpecial").checked;
+  document.getElementById("ccSabeom").classList.toggle("checked", state.isSabeom);
+  document.getElementById("ccSpecial").classList.toggle("checked", state.isSpecial);
+  let info="";
+  if(state.isSpecial){
+    const yr = state.isSabeom?2:1;
+    info=`<div class="info-box amber">특수학교(학급) 가산연수 적용: ${state.isSabeom?"사범계 졸업 → ":"비사범계 졸업 → "}+${yr}년</div>`;
+  } else if(state.isSabeom){
+    info=`<div class="info-box blue">사범계 가산연수 적용: +1년</div>`;
+  }
+  document.getElementById("bonusInfo").innerHTML = info;
+}
+
+function isTutoringCareer(c) {
+  return c.type === 'tutoringPending' || (c.content || '').includes('교습소') ||
+    (c.candidateTypes || []).includes('tutoringPending');
+}
+
+const VERIFIED_FACT_FIELDS = {
+  legal_form: {label:'기관의 법적 형태', options:[['unknown','아직 확인하지 않음'],['commercial_company','상법상 회사 (주식·유한·합명·합자회사 등)'],['civil_corporation','민법상 재단·사단법인'],['individual_business','개인사업체'],['public_recognized','공공기관·공공법인 해당 근거 확인']]},
+  employment_verified: {label:'근로관계와 정기 급여', options:[['unknown','아직 확인하지 않음'],['yes','근로계약·급여 등 증빙으로 확인'],['no','근로관계 또는 정기 급여가 아님을 확인']]},
+  academy_registration: {label:'근무 당시 학원 등록·교습소 신고', options:[['unknown','아직 확인하지 않음'],['registered','등록·신고 이력 확인'],['unregistered','미등록·미신고였음을 확인']]},
+  tax_evidence: {label:'사업자·소득세·부가세 등 세무자료', options:[['unknown','아직 확인하지 않음'],['yes','해당 경력을 입증할 자료 확인'],['no','자료를 검토했으나 해당 경력을 입증하지 못함']]},
+  visiting_education: {label:'학생 가정 방문 교육 업무', options:[['unknown','아직 확인하지 않음'],['yes','학생 가정을 직접 방문해 지도'],['no','가정 방문 교육 업무가 아님']]},
+  public_role: {label:'공공기관에서 실제 담당한 업무', options:[['unknown','아직 확인하지 않음'],['yes','행정·경영·연구·기술 업무로 확인'],['no','해당 업무에 속하지 않음']]},
+};
+
+function normalizeVerifiedFacts(facts = {}) {
+  return Object.fromEntries(Object.entries(VERIFIED_FACT_FIELDS).map(([key, field]) =>
+    [key, field.options.some(([value]) => value === facts?.[key]) ? facts[key] : 'unknown']));
+}
+
+function visibleEvidenceKeys(c) {
+  const facts = normalizeVerifiedFacts(c.verifiedFacts);
+  const keys = new Set(['legal_form', 'employment_verified']);
+  const text = c.content || '';
+  if (/학원|교습소/.test(text)) ['academy_registration', 'tax_evidence'].forEach(key => keys.add(key));
+  if (/공공|공기업|공단|공사|진흥원|연구원|재단|지자체/.test(text) || facts.legal_form === 'public_recognized') keys.add('public_role');
+  if (/회사|학습지|방문|주식|유한|합명|합자|㈜/.test(text) || facts.legal_form === 'commercial_company') keys.add('visiting_education');
+  if (facts.legal_form === 'individual_business') keys.add('tax_evidence');
+  Object.entries(facts).forEach(([key, value]) => { if (value !== 'unknown' || c.showAllEvidence) keys.add(key); });
+  return keys;
+}
+
+function evidenceFormHtml(c) {
+  const facts = normalizeVerifiedFacts(c.verifiedFacts);
+  const visible = visibleEvidenceKeys(c);
+  const count = Object.values(facts).filter(value => value !== 'unknown').length;
+  return `<details class="career-evidence" ${c.evidenceOpen ? 'open' : ''} ontoggle="setCareerEvidenceOpen(${c.id},this.open)">
+    <summary><span>증빙에서 확인한 내용</span><small id="evidenceCount_${c.id}">${count ? `${count}개 항목 입력됨` : '미확인 항목은 그대로 두세요'}</small></summary>
+    <div class="career-evidence-body">
+      <p class="evidence-help">기관명·직종만으로 법인 형태, 등록 여부, 고용 사실을 확정할 수 없습니다. 경력증명서·법인자료·신고자료에서 직접 확인한 내용만 선택하세요.</p>
+      <div class="grid2 evidence-grid">${Object.entries(VERIFIED_FACT_FIELDS).map(([key, field]) => `<div class="field" data-evidence-field="${key}" ${visible.has(key) ? '' : 'hidden'}>
+        <label for="evidence_${c.id}_${key}">${field.label}</label>
+        <select id="evidence_${c.id}_${key}" onchange="updateVerifiedFact(${c.id},'${key}',this.value)">${field.options.map(([value, label]) => `<option value="${value}" ${facts[key] === value ? 'selected' : ''}>${label}</option>`).join('')}</select>
+      </div>`).join('')}</div>
+      <button type="button" class="evidence-more" id="evidenceMore_${c.id}" onclick="toggleAllEvidence(${c.id})">${c.showAllEvidence ? '관련 항목만 보기' : '다른 증빙항목도 보기'}</button>
+      <div class="field evidence-source"><label for="evidenceText_${c.id}">원문에서 확인할 내용 <span class="optional-label">선택</span></label>
+        <textarea id="evidenceText_${c.id}" rows="2" maxlength="4000" placeholder="예: 법인등기상 주식회사, 근로계약 체결 및 월 급여 지급. 판단에 필요한 문구만 적어 주세요." oninput="updateCareer(${c.id},'evidenceText',this.value)">${escapeHtml(c.evidenceText || '')}</textarea>
+        <small>이름·주민등록번호 같은 개인정보는 적지 않아도 됩니다.</small>
+      </div>
+    </div>
+  </details>`;
+}
+
+function setCareerEvidenceOpen(id, open) {
+  const c = state.careers.find(item => item.id === id);
+  if (c) c.evidenceOpen = open;
+}
+
+function refreshEvidenceUi(c) {
+  const visible = visibleEvidenceKeys(c);
+  document.querySelectorAll(`#ci_${c.id} [data-evidence-field]`).forEach(field => { field.hidden = !visible.has(field.dataset.evidenceField); });
+  const count = Object.values(normalizeVerifiedFacts(c.verifiedFacts)).filter(value => value !== 'unknown').length;
+  const counter = document.getElementById(`evidenceCount_${c.id}`);
+  if (counter) counter.textContent = count ? `${count}개 항목 입력됨` : '미확인 항목은 그대로 두세요';
+  const more = document.getElementById(`evidenceMore_${c.id}`);
+  if (more) more.textContent = c.showAllEvidence ? '관련 항목만 보기' : '다른 증빙항목도 보기';
+}
+
+function toggleAllEvidence(id) {
+  const c = state.careers.find(item => item.id === id);
+  if (!c) return;
+  c.showAllEvidence = !c.showAllEvidence;
+  refreshEvidenceUi(c);
+}
+
+function invalidateCareerRecommendation(c) {
+  c.assistantCandidate = null;
+  const assistantBox = document.getElementById(`assistantCandidate_${c.id}`);
+  if (assistantBox) assistantBox.innerHTML = assistantCandidateHtml(c);
+  if (!c.recommendationReason && !c.aiOriginalType && !c.candidateTypes?.length && !c.recommendationNeedsRefresh) return;
+  c.recommendationNeedsRefresh = true;
+  if (!c.userSelectedType) c.type = '';
+  c.aiSuggested = false;
+  c.aiOriginalType = '';
+  c.candidateTypes = [];
+  c.legalBasis = [];
+  c.requiredChecks = [];
+  c.recommendationReason = '';
+  c.reviewRequired = true;
+  const select = document.getElementById(`careerType_${c.id}`);
+  if (select) {
+    select.value = c.type;
+    const selected = CAREER_TYPES.find(type => type.id === c.type);
+    select.title = selected ? `[${fmtRate(selected.rate)}] ${selected.label}` : '적용할 환산율과 경력 종류를 선택하세요';
+  }
+  const status = document.getElementById(`careerTypeStatus_${c.id}`);
+  if (status) status.textContent = c.userSelectedType ? '(담당자 직접 선택)' : '';
+  const result = document.getElementById(`careerRecommendation_${c.id}`);
+  if (result) result.innerHTML = '<div class="recommendation-stale" role="status">입력 내용이 바뀌었습니다. 증빙을 확인하고 환산율을 다시 추천받으세요.</div>';
+  const badge = document.getElementById(`careerBadge_${c.id}`);
+  if (badge) badge.innerHTML = '<span class="review-state">확인 필요</span>';
+}
+
+function updateVerifiedFact(id, key, value) {
+  const c = state.careers.find(item => item.id === id);
+  if (!c || !VERIFIED_FACT_FIELDS[key]?.options.some(([option]) => option === value)) return;
+  c.verifiedFacts = {...normalizeVerifiedFacts(c.verifiedFacts), [key]: value};
+  invalidateCareerRecommendation(c);
+  refreshEvidenceUi(c);
+  updateAllPreviews();
+}
+
+function careerCandidateTypes(result) {
+  return [...new Set([result.suggested_type, ...(Array.isArray(result.candidate_types) ? result.candidate_types : [])])]
+    .filter(id => CAREER_TYPES.some(type => type.id === id));
+}
+
+function renderCareerList() {
+  const list = document.getElementById("careerList");
+  list.innerHTML = "";
+  
+  if(state.careers.length === 0) {
+      list.innerHTML = `<div class="career-empty"><strong>아직 입력된 경력이 없습니다.</strong><span>아래의 ‘경력 직접 추가’를 누르거나 자료 입력 단계에서 증명서를 분석하세요.</span></div>`;
+  }
+
+  state.careers.forEach((c,idx)=>{
+    ensureCareerIdentity(c);
+    const wrap = document.createElement("div");
+    wrap.className = "career-item" + (c.aiSuggested ? " ai-suggested" : "");
+    wrap.id = "ci_"+c.id;
+
+    let opts = `<option value="">── 적용 환산율/종류 선택 ──</option>`;
+    const groups = {};
+    CAREER_TYPES.forEach(t=>{ (groups[t.group]=groups[t.group]||[]).push(t); });
+    Object.entries(groups).forEach(([grp,arr])=>{
+      opts += `<optgroup label="${grp}">`;
+      arr.forEach(t=>{ opts+=`<option value="${t.id}" ${c.type===t.id?"selected":""}>[${fmtRate(t.rate)}] ${t.label}</option>`; });
+      opts += `</optgroup>`;
+    });
+
+    const candidateTypes = (c.candidateTypes || []).filter(id => CAREER_TYPES.some(t=>t.id===id));
+    let aiBadgeHtml = "";
+    if(isTutoringCareer(c)) {
+      aiBadgeHtml = `<button type="button" class="review-required-btn" onclick="showTutoringReviewInfo()">확인 필요</button>`;
+    } else if(c.reviewRequired || c.recommendationNeedsRefresh || (!c.type && (candidateTypes.length || c.recommendationReason))) {
+      aiBadgeHtml = '<span class="review-state">확인 필요</span>';
+    } else if(c.userSelectedType && c.type) {
+      aiBadgeHtml = '<span class="manual-selection-badge">담당자 선택</span>';
+    } else if(c.aiSuggested) {
+      aiBadgeHtml = '<span class="ai-badge">증빙 대조 후 적용</span>';
+    }
+
+    const candidateChips = candidateTypes.map(id => {
+      const item = CAREER_TYPES.find(t=>t.id===id);
+      return item ? `<button type="button" class="legal-rec-chip ${c.type===id?'selected':''}" onclick="chooseLegalCandidate(${c.id},'${id}')">${escapeHtml(item.label)} · ${escapeHtml(fmtRate(item.rate))}</button>` : '';
+    }).join('');
+    const checks = (c.requiredChecks || []).map(value=>`• ${escapeHtml(value)}`).join('<br>');
+    const bases = (c.legalBasis || []).map(value=>escapeHtml(value)).join(' / ');
+    const tutoringPending = isTutoringCareer(c);
+    const recommendationHtml = c.recommendationNeedsRefresh ? '<div class="recommendation-stale" role="status">입력 내용이 바뀌었습니다. 증빙을 확인하고 환산율을 다시 추천받으세요.</div>' : (candidateTypes.length || c.recommendationReason || bases || checks || c.autoApply === false) ? `
+      <div class="legal-rec-box">
+        ${c.autoApply === false ? '<div class="candidate-only-note">증빙 확인 전 참고 후보</div>' : ''}
+        <div class="legal-rec-title">${escapeHtml(c.recommendationReason || '확인할 경력 후보')}${tutoringPending ? '<button type="button" class="review-required-btn" onclick="showTutoringReviewInfo()">확인 필요 · 상세 안내</button>' : ''}</div>
+        ${c.userSelectedType && c.type ? '<div class="selection-preserved">담당자가 직접 선택한 환산율을 유지했습니다.</div>' : ''}
+        ${candidateChips ? `<div class="legal-rec-chips">${candidateChips}</div>` : ''}
+        ${candidateChips ? '<p class="candidate-help">후보를 누르면 담당자의 직접 선택으로 적용됩니다.</p>' : ''}
+        ${checks ? `<div class="legal-rec-checks"><strong>적용 전 확인할 사항</strong><br>${checks}</div>` : ''}
+        ${bases ? `<div class="legal-rec-basis"><strong>근거:</strong> ${bases}<br>기준일 ${escapeHtml(c.lawSnapshotDate || LAW_SNAPSHOT.asOf)}</div>` : ''}
+      </div>` : '';
+
+    const selectedType = CAREER_TYPES.find(t=>t.id===c.type);
+    const hourlyField = selectedType?.calc === "schoolHourly" ? `
+      <div class="field" style="margin-bottom:10px">
+        <label>주당 수업시수 (유·초·중등 시간강사용)</label>
+        <input type="text" value="${escapeHtml(c.weeklyHours||'')}" oninput="updateCareer(${c.id}, 'weeklyHours', this.value)" placeholder="예: 22">
+        <div class="part-time-note">주 12시간 이하 또는 시수 불명은 3할, 13시간 이상은 경력기간 × 주당시수/시기별 평균 주당시간(44·43·42·40시간)으로 계산합니다.</div>
+      </div>` : "";
+    const generalPartTimeField = selectedType && GENERAL_PART_TIME_TYPES.has(selectedType.id) ? `
+      <div class="field" style="margin-bottom:10px">
+        <label>주당 근무시간 (단시간 경력인 경우만)</label>
+        <input type="text" value="${escapeHtml(c.generalWeeklyHours||'')}" oninput="updateCareer(${c.id}, 'generalWeeklyHours', this.value)" placeholder="통상근무면 비워두기 · 예: 20">
+        <div class="part-time-note">주 15시간 미만은 산입 제외, 주 15~39시간은 경력기간 × 주당시간/40시간으로 비례환산합니다.</div>
+      </div>` : "";
+
+    wrap.innerHTML = `
+      <div class="career-item-head">
+        <span class="career-num">경력 ${idx+1} <span id="careerBadge_${c.id}">${aiBadgeHtml}</span></span>
+        <button class="btn-del" onclick="removeCareer(${c.id})">삭제</button>
+      </div>
+      <div id="careerRecommendation_${c.id}">${recommendationHtml}</div>
+      <div class="career-identity-grid" style="margin-bottom:10px">
+        <div class="field">
+          <label for="careerOrganization_${c.id}">근무학교(회사)</label>
+          <input id="careerOrganization_${c.id}" type="text" value="${escapeHtml(c.organization)}" oninput="updateCareer(${c.id}, 'organization', this.value)" placeholder="예: 한국도로공사">
+        </div>
+        <div class="field">
+          <label for="careerPosition_${c.id}">직종</label>
+          <input id="careerPosition_${c.id}" type="text" value="${escapeHtml(c.position)}" oninput="updateCareer(${c.id}, 'position', this.value)" placeholder="예: 경영지원 직원">
+        </div>
+        <div class="field">
+          <label for="careerType_${c.id}">경력 환산율 선택 <span class="suggestion-label" id="careerTypeStatus_${c.id}">${c.userSelectedType && c.type ? '(담당자 직접 선택)' : c.aiSuggested ? '(추천값 · 수정 가능)' : ''}</span></label>
+          <select id="careerType_${c.id}" title="${selectedType ? escapeHtml(`[${fmtRate(selectedType.rate)}] ${selectedType.label}`) : '적용할 환산율과 경력 종류를 선택하세요'}" onchange="updateCareerType(${c.id},this.value)">${opts}</select>
+        </div>
+      </div>
+      ${evidenceFormHtml(c)}
+      <div class="recommend-action"><button type="button" class="btn-secondary" onclick="recommendCareerFromContent(${c.id}, this)">입력한 경력으로 환산율 추천</button><span>확인한 증빙을 입력하면 더 구체적으로 검토할 수 있습니다. 최종 적용 전 원본과 대조하세요.</span></div>
+      <div id="assistantCandidate_${c.id}">${assistantCandidateHtml(c)}</div>
+      <div class="grid2" style="margin-bottom:10px">
+        <div class="field">
+          <label>시작일 (산입)</label>
+          <div class="date-wrap">
+            <input type="text" class="date-input" id="cs_${c.id}" value="${escapeHtml(c.start)}"
+              placeholder="YYYY-MM-DD" maxlength="10"
+              oninput="maskDate(this);updateCareer(${c.id},'start',this.value)"
+              onblur="validateDate(this);updateCareer(${c.id},'start',this.value)">
+            <span class="date-hint">예: 2020-03-01</span>
+          </div>
+        </div>
+        <div class="field">
+          <label id="endLabel_${c.id}">종료일</label>
+          <div class="date-wrap">
+            <input type="text" class="date-input" id="ce_${c.id}" value="${escapeHtml(c.end)}"
+              placeholder="YYYY-MM-DD" maxlength="10"
+              oninput="maskDate(this);updateCareer(${c.id},'end',this.value)"
+              onblur="validateDate(this);updateCareer(${c.id},'end',this.value)">
+            <span class="date-hint">예: 2023-02-28</span>
+          </div>
+        </div>
+      </div>
+      <label class="check-card" style="padding:10px 12px; margin-bottom:10px">
+        <input type="checkbox" ${c.inclEnd ? 'checked' : ''} onchange="updateCareer(${c.id}, 'inclEnd', this.checked)">
+        <div>
+          <div class="cc-label">종료일 산입</div>
+          <div class="cc-desc">기간제 계약만료일·군 전역일 등 만료일을 포함하는 경력에만 체크하세요. 일반 퇴직일은 원칙적으로 제외합니다.</div>
+        </div>
+      </label>
+      ${hourlyField}
+      ${generalPartTimeField}
+      <div class="preview-box preview-hidden" id="pv_${c.id}"></div>
+    `;
+    list.appendChild(wrap);
+  });
+  updateAllPreviews();
+}
+
+function updateCareer(id, field, val) {
+  const c = state.careers.find(x=>x.id===id);
+  if(!c) return;
+  c[field] = val;
+  if (field === 'content') Object.assign(c, splitCareerContent(val));
+  if (['content', 'organization', 'position'].includes(field)) syncCareerContent(c);
+  if (['content', 'organization', 'position', 'evidenceText', 'weeklyHours'].includes(field)) {
+    invalidateCareerRecommendation(c);
+    refreshEvidenceUi(c);
+  }
+  updatePreview(id);
+  updateTotalBar();
+}
+
+function splitCareerContent(content) {
+  const value = String(content || '').trim();
+  // Legacy combined text only. Legal-form prefixes belong to the organization,
+  // so a leading "주식회사" must not itself become the entire organization name.
+  const legalPrefix = value.match(/^((?:(?:주식회사|유한회사|유한책임회사|합명회사|합자회사|재단법인|사단법인|학교법인|의료법인|사회복지법인|\(주\)|㈜)\s*))(.+)$/);
+  const prefix = legalPrefix ? legalPrefix[1] : '';
+  const body = legalPrefix ? legalPrefix[2] : value;
+  const organizationEnd = body.match(/^(.+?(?:유치원|초등학교|중학교|고등학교|특수학교|대학교|전문대학|대학|보습학원|학원|교습소|공사|공단|진흥원|연구원|개발원|교육청|지원청|시청|군청|구청|도청|협회|학회|재단|병원|의원|센터|주식회사|유한회사|유한책임회사|합명회사|합자회사|회사))\s+(.+)$/);
+  if (organizationEnd) return {organization: (prefix + organizationEnd[1]).trim(), position: organizationEnd[2].trim()};
+  const compactSchool = body.match(/^(.+?(?:유치원|초등학교|중학교|고등학교|특수학교))((?:기간제교원|기간제교사|정규교원|정교사|교사|시간강사|강사).*)$/);
+  if (compactSchool) return {organization: (prefix + compactSchool[1]).trim(), position: compactSchool[2].trim()};
+  const knownRole = value.match(/^(.+?)\s+((?:(?:경영지원|행정지원|교육지원|일반행정|사무행정|연구개발|재무회계|인사총무|수학|영어|국어|방문교육|가정방문)\s+)?(?:기간제교원|기간제교사|정규교원|정교사|교사|시간강사|강사|교습자|원장|사무원|사무직|사무보조|행정원|행정직|연구원|연구직|기술원|기술직|직원|판매원|판매직|보험모집인|보험설계사|교육상담원|상담원|운전원|보육교사|간호사|사회복지사|점원|매장관리자|대표|개인사업자))$/);
+  if (knownRole) return {organization: knownRole[1].trim(), position: knownRole[2].trim()};
+  return {organization: value, position: ''};
+}
+
+function syncCareerContent(c) {
+  c.content = [c.organization, c.position].map(value => String(value || '').trim()).filter(Boolean).join(' ');
+}
+
+function ensureCareerIdentity(c) {
+  const hasOrganization = typeof c.organization === 'string';
+  const hasPosition = typeof c.position === 'string';
+  const legacyText = String(c.content || '').trim();
+  const fallback = splitCareerContent(legacyText);
+  if (!hasOrganization) c.organization = fallback.organization;
+  if (!hasPosition) c.position = fallback.position;
+  if (hasOrganization && !hasPosition && c.organization.trim() && legacyText.startsWith(c.organization.trim() + ' ')) {
+    c.position = legacyText.slice(c.organization.trim().length).trim();
+  } else if (!hasOrganization && hasPosition && c.position.trim() && legacyText.endsWith(' ' + c.position.trim())) {
+    c.organization = legacyText.slice(0, -c.position.trim().length).trim();
+  }
+  syncCareerContent(c);
+}
+
+function careerRecommendationSnapshot(c) {
+  return JSON.stringify([c.organization, c.position, c.evidenceText || '', c.weeklyHours || '', normalizeVerifiedFacts(c.verifiedFacts)]);
+}
+
+async function recommendCareerFromContent(id, button) {
+  const career = state.careers.find(item => item.id === id);
+  if (!career) return;
+  ensureCareerIdentity(career);
+  const organization = career.organization.trim();
+  const position = career.position.trim();
+  if (!organization || !position) {
+    showAlert('근무학교(회사)와 직종을 각각 입력하세요.\n예: 근무기관 한국도로공사 / 직종 경영지원 직원');
+    return;
+  }
+  button.disabled = true;
+  const oldText = button.textContent;
+  button.textContent = '확인 중…';
+  try {
+    const args = {organization, position, weeklyHours: career.weeklyHours || null,
+      rawText: [organization, position, career.evidenceText].filter(Boolean).join('\n'),
+      verifiedFacts: normalizeVerifiedFacts(career.verifiedFacts)};
+    const requestInput = careerRecommendationSnapshot(career);
+    let result;
+    if (IS_TAURI) {
+      result = await invokeDesktop('recommend_career_type', args);
+    } else {
+      const response = await fetch(OCR_API_BASE_URL + '/api/recommend-career', {
+        method: 'POST', headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({organization, position, weekly_hours: args.weeklyHours, raw_text: args.rawText, verified_facts: args.verifiedFacts})
+      });
+      if (!response.ok) throw new Error('로컬 추천 엔진에 연결할 수 없습니다. 데스크톱 앱에서 다시 시도하세요.');
+      result = await response.json();
+    }
+    if (!state.careers.includes(career)) return;
+    if (requestInput !== careerRecommendationSnapshot(career)) {
+      showAlert('추천을 확인하는 동안 입력이 바뀌었습니다. 현재 내용으로 다시 추천받으세요.');
+      return;
+    }
+    const matched = CAREER_TYPES.find(type => type.id === result.suggested_type);
+    const canAutoApply = result.auto_apply !== false;
+    if (!career.userSelectedType) career.type = matched && canAutoApply ? matched.id : '';
+    career.autoApply = result.auto_apply;
+    career.aiSuggested = !!matched && canAutoApply && !career.userSelectedType;
+    career.aiOriginalType = matched ? matched.id : '';
+    career.aiConfidence = result.confidence || 'low';
+    career.candidateTypes = careerCandidateTypes(result);
+    career.legalBasis = result.legal_basis || [];
+    career.requiredChecks = result.required_checks || [];
+    career.recommendationReason = result.reason || '';
+    career.reviewRequired = !canAutoApply || result.review_required === true || !matched || isTutoringCareer(career);
+    career.recommendationNeedsRefresh = false;
+    career.lawSnapshotDate = result.law_snapshot_date || LAW_SNAPSHOT.asOf;
+    renderCareerList();
+  } catch (error) {
+    showAlert('환산율 추천을 완료하지 못했습니다. ' + (error.message || String(error)));
+  } finally {
+    button.disabled = false;
+    button.textContent = oldText;
+  }
+}
+
+function updatePreview(id) {
+  const c = state.careers.find(x=>x.id===id);
+  const pv = document.getElementById("pv_"+id);
+  if(!c||!pv) return;
+  const opt = CAREER_TYPES.find(t=>t.id===c.type);
+  if(!opt||!isValidDate(c.start)||!isValidDate(c.end)){
+    pv.className="preview-box preview-hidden"; return;
+  }
+  const raw = getCareerRaw(c);
+  if(!raw){ pv.className="preview-box preview-hidden"; return; }
+  const conv = applyCareerRule(raw, opt, c, c.start);
+  pv.className="preview-box";
+  const rateText = fmtRate(getCareerDisplayRate(opt, c));
+  const colors = {
+    "① 교원경력":"background:#eff6ff;border-color:#bfdbfe;color:#1e40af",
+    "② 공무원경력":"background:#f0fdf4;border-color:#bbf7d0;color:#166534",
+    "③ 유사경력 – 강사":"background:#fffbeb;border-color:#fde68a;color:#92400e",
+    "③ 유사경력 – 연구":"background:#faf5ff;border-color:#e9d5ff;color:#6b21a8",
+    "③ 유사경력 – 국가·지방기관":"background:#fff7ed;border-color:#fed7aa;color:#9a3412",
+    "③ 유사경력 – 그 밖의 경력":"background:#fff1f2;border-color:#fecdd3;color:#9f1239",
+  };
+  pv.style.cssText = colors[opt.group]||"";
+  pv.innerHTML = `
+    <div><div class="pb-label">원경력기간</div><div class="pb-val">${fmtPeriod(raw.months,raw.days)}</div></div>
+    <div><div class="pb-label">환산율</div><div class="pb-val">${rateText}</div></div>
+    <div><div class="pb-label">환산경력</div><div class="pb-val">${fmtPeriod(conv.months,conv.days)}</div></div>
+  `;
+}
+
+function updateAllPreviews() {
+  state.careers.forEach(c=>updatePreview(c.id));
+  updateTotalBar();
+}
+
+function updateTotalBar() {
+  const details = buildRecognizedDetails().filter(d=>d.conv.months || d.conv.days);
+  const tb = document.getElementById("totalBar");
+  if(details.length===0){ tb.style.display="none"; return; }
+  const total = sumPeriods(details.map(d=>d.conv));
+  const yr = Math.floor(total.months/12);
+  const remMo = total.months%12;
+  const remDa = total.days;
+  const hasOverlap = buildRecognizedDetails().some(d=>d.overlapExcluded);
+  tb.style.display="block";
+  document.getElementById("totalVal").textContent = fmtPeriod(total.months, total.days);
+  const sub = remMo>0||remDa>0
+    ? `≈ ${yr}년 인정 + 잔여 ${fmtPeriod(remMo,remDa)} (다음 승급 기산)`
+    : `≈ ${yr}년 인정`;
+  document.getElementById("totalSub").textContent = sub + (hasOverlap ? " · 중복기간은 유리한 경력 1개만 산입" : "");
+}
+
+function addCareer(data = {content:"", start:"", end:"", type:"", inclEnd:false, weeklyHours:"", generalWeeklyHours:"", aiSuggested:false, aiConfidence:"", aiOriginalType:"", candidateTypes:[], legalBasis:[], requiredChecks:[], recommendationReason:"", lawSnapshotDate:""}) {
+  const career = {id:careerIdSeq++, userSelectedType:false, evidenceText:'', ...data,
+    verifiedFacts:normalizeVerifiedFacts(data.verifiedFacts)};
+  if (career.autoApply === false && !career.userSelectedType) {
+    career.aiOriginalType = career.aiOriginalType || career.type || '';
+    career.candidateTypes = careerCandidateTypes({suggested_type:career.aiOriginalType, candidate_types:career.candidateTypes});
+    career.type = '';
+    career.aiSuggested = false;
+    career.reviewRequired = true;
+  }
+  state.careers.push(career);
+  renderCareerList();
+}
+
+function chooseLegalCandidate(id, typeId) {
+  const c = state.careers.find(x=>x.id===id);
+  if(!c || !CAREER_TYPES.some(t=>t.id===typeId)) return;
+  c.type = typeId;
+  c.userSelectedType = true;
+  c.aiSuggested = false;
+  renderCareerList();
+}
+
+function updateCareerType(id, val) {
+  const c = state.careers.find(x=>x.id===id);
+  if(!c) return;
+  c.type = val;
+  c.userSelectedType = !!val;
+  c.aiSuggested = false;
+  renderCareerList();
+}
+
+function acceptAllAiSuggestions() {
+  state.careers.forEach(c => {
+    if(c.aiSuggested) {
+      c.userSelectedType = !!c.type;
+      c.aiSuggested = false; 
+      c.aiOriginalType = "";
+    }
+  });
+  document.getElementById("aiReviewBar").style.display = "none";
+  renderCareerList();
+  showAlert(state.careers.some(isTutoringCareer)
+    ? "추천 환산율을 확인 처리했습니다. 교습소 경력의 '확인 필요' 표시는 증빙자료 검토 전까지 유지됩니다."
+    : "선택된 법령 추천 환산율을 확인 처리했습니다.");
+}
+
+function clearAllAiSuggestions() {
+  state.careers.forEach(c => {
+    if(c.aiOriginalType && !c.userSelectedType) {
+      c.type = "";
+      c.aiSuggested = false;
+      c.aiOriginalType = "";
+      c.aiConfidence = "";
+    }
+  });
+  document.getElementById("aiReviewBar").style.display = "none";
+  renderCareerList();
+  showAlert("자동 선택된 환산율을 초기화했습니다. 법령 후보와 확인사항을 검토해 직접 선택해 주세요.");
+}
+
+function removeCareer(id) {
+  state.careers = state.careers.filter(c=>c.id!==id);
+  renderCareerList();
+}
+
+function renderResult() {
+  const qual = QUALS.find(q=>q.id===state.qual);
+  const edu  = EDUS.find(e=>e.id===state.edu);
+
+  const inputName = document.getElementById("name").value || "대상자";
+  const inputAffiliation = document.getElementById("affiliation").value || "소속 미입력";
+  const inputPosition = document.getElementById("position").value || "교사";
+  const inputAuthor = document.getElementById("author").value || "서명 미입력";
+  const inputAuthorRank = document.getElementById("authorRank").value || "직급 미입력";
+  const inputEduText = document.getElementById("eduText").value || (edu?edu.label:"학력 미선택");
+  const hireDateStr = document.getElementById("hireDate").value;
+
+  const details = buildRecognizedDetails();
+  const total = details.length ? sumPeriods(details.map(d=>d.conv)) : {months:0,days:0};
+  const careerYr = Math.floor(total.months/12);
+  const remMo = total.months%12;
+  const remDa = total.days;
+
+  const schoolAdj = edu ? (edu.total - 16) : 0;
+  let bonus = 0;
+  if(state.isSpecial) bonus = state.isSabeom?2:1;
+  else if(state.isSabeom) bonus = 1;
+
+  const baseGrade = qual ? qual.base : 9; // 기본값 9
+  const initGrade = Math.max(1, baseGrade + schoolAdj + bonus + careerYr);
+  const hasOverlap = details.some(d=>d.overlapExcluded);
+  const adjTitle = "② 학령가감 (학령 − 16)";
+  const adjSub = `학력: ${edu?edu.label:"-"}`;
+
+  let nextPromoStr = "—";
+  if (isValidDate(hireDateStr) && (remMo > 0 || remDa > 0)) {
+    const [hY, hM, hD] = hireDateStr.split("-").map(Number);
+    const reqM = remDa > 0 ? 11 - remMo : 12 - remMo;
+    const reqD = remDa > 0 ? 30 - remDa : 0;
+    
+    let dY = hY; let dM = hM; let dD = hD;
+    dD += reqD;
+    if (dD > 30) { dD -= 30; dM += 1; }
+    dM += reqM;
+    if (dM > 12) { dM -= 12; dY += 1; }
+    if (dD !== 1) { dM += 1; if (dM > 12) { dM -= 12; dY += 1; } }
+    nextPromoStr = `${dY}.${String(dM).padStart(2, '0')}.01`;
+  } else if (isValidDate(hireDateStr)) {
+    const [hY, hM, hD] = hireDateStr.split("-").map(Number);
+    let dY = hY + 1; let dM = hM;
+    if (hD !== 1) { dM += 1; if (dM > 12) { dM -= 12; dY += 1; } }
+    nextPromoStr = `${dY}.${String(dM).padStart(2, '0')}.01`;
+  }
+
+  document.getElementById("rName").textContent = inputName;
+  document.getElementById("rHireDate").textContent = hireDateStr + " 임용";
+  document.getElementById("rQual").textContent = (qual?qual.label:"자격 미선택") + " · " + (edu?edu.label:"학력 미선택");
+  document.getElementById("rGradeNum").textContent = initGrade;
+
+  const rem = document.getElementById("rRemain");
+  if(remMo>0||remDa>0){
+    rem.style.display="block";
+    document.getElementById("rRemainVal").textContent = fmtPeriod(remMo,remDa) + ` (다음 승급예정: ${nextPromoStr})`;
+  } else { rem.style.display="none"; }
+
+  const proc = document.getElementById("calcProcess");
+  const sign = v => (v>=0?"+":"")+v;
+  let bonusRow="";
+  if(bonus>0){
+    const bonusLabel = state.isSpecial ? `특수학교(학급) + ${state.isSabeom?"사범계":"비사범계"} → +${bonus}년` : "사범계 가산연수 +1년";
+    bonusRow=`<div class="calc-row purple"><div><div class="cr-label">③ 가산연수</div><div class="cr-sub">${bonusLabel}</div></div><div class="cr-val">+${bonus}년</div></div>`;
+  }
+  const careerLabel = bonus>0?"④":"③";
+  const eqParts = [`${baseGrade}`, `(${sign(schoolAdj)})`, bonus>0?`+${bonus}`:"", `+${careerYr}`].filter(Boolean).join(" + ").replace("+ (+","+ (");
+
+  proc.innerHTML = `
+    <div class="calc-row blue">
+      <div><div class="cr-label">① 기산호봉</div><div class="cr-sub">자격: ${qual?qual.label:"-"}</div></div>
+      <div class="cr-val">${baseGrade}호봉</div>
+    </div>
+    <div class="calc-row green">
+      <div><div class="cr-label">${adjTitle}</div><div class="cr-sub">${adjSub}</div></div>
+      <div class="cr-val">${sign(schoolAdj)}년</div>
+    </div>
+    ${bonusRow}
+    <div class="calc-row amber">
+      <div><div class="cr-label">${careerLabel} 환산경력 합계</div>
+      <div class="cr-sub">총 환산경력: ${fmtPeriod(total.months,total.days)} → ${careerYr}년 인정 (잔여 ${fmtPeriod(remMo,remDa)})${hasOverlap ? " · 중복기간은 유리한 1개 경력만 산입" : ""}</div></div>
+      <div class="cr-val">+${careerYr}년</div>
+    </div>
+    <div class="calc-total">
+      <div>
+        <div class="ct-eq">초임호봉 = ① + ② ${bonus>0?"+ ③ ":""}+ ${careerLabel}</div>
+        <div style="font-size:13px;color:#93c5fd;margin-top:2px">= ${eqParts} = <strong>${initGrade}</strong></div>
+      </div>
+      <div class="ct-num">${initGrade}호봉</div>
+    </div>
+  `;
+
+  const tbody = document.getElementById("careerTableBody");
+  tbody.innerHTML = "";
+  details.forEach(d=>{
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${escapeHtml(d.content || d.label)} <div style="font-size:10px; color:#9ca3af; margin-top:2px">${escapeHtml(d.label)}</div></td>
+      <td style="color:#6b7280;font-size:12px">${escapeHtml(d.start)} ~ ${escapeHtml(d.end)}</td>
+      <td style="text-align:center;font-weight:600">${fmtPeriod(d.raw.months,d.raw.days)}</td>
+      <td style="text-align:center"><span class="tag">${fmtRate(d.rate)}</span></td>
+      <td style="text-align:center;font-weight:700;color:#1a3a6b">${fmtPeriod(d.conv.months,d.conv.days)}${d.overlapExcluded ? '<div style="font-size:10px;color:#dc2626;margin-top:2px">중복 제외/조정</div>' : ''}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+  const tr = document.createElement("tr");
+  tr.innerHTML = `<td colspan="4" class="td-sum">합계</td><td class="td-sum" style="text-align:center;font-size:15px">${fmtPeriod(total.months,total.days)}</td>`;
+  tbody.appendChild(tr);
+
+  document.getElementById("pAffiliation").textContent = inputAffiliation;
+  document.getElementById("pPosition").textContent = inputPosition;
+  document.getElementById("pName").textContent = inputName;
+  document.getElementById("pProposedPosition").textContent = document.getElementById("proposedPosition").value;
+  document.getElementById("pEduText").textContent = inputEduText;
+  document.getElementById("pGrade").textContent = document.getElementById("currentGrade").value;
+
+  const careerTotalCell = document.getElementById("pCareerTotal");
+  careerTotalCell.textContent = fmtPeriod(total.months, total.days);
+  careerTotalCell.dataset.years = String(Math.floor(total.months / 12));
+  careerTotalCell.dataset.months = String(total.months % 12);
+  careerTotalCell.dataset.days = String(total.days);
+  document.getElementById("pDeductYears").textContent = document.getElementById("deductYears").value;
+  document.getElementById("pRemain").textContent = remMo > 0 || remDa > 0 ? `${remMo}월 ${remDa}일` : "없음";
+  document.getElementById("pFinalGrade").textContent = initGrade + "호봉";
+  document.getElementById("pRequiredYears").textContent = document.getElementById("requiredYears").value;
+
+  const pBody = document.getElementById("pCareerBody");
+  pBody.innerHTML = "";
+  details.forEach(d => {
+    const rRate = Math.round(d.rate * 100);
+    const cContent = d.content || d.label;
+    const reviewNote = isTutoringCareer(d) ? `확인 필요·${rRate}% 잠정` : '';
+
+    pBody.innerHTML += `
+      <tr>
+        <td>${escapeHtml(d.start.replaceAll('-', '.'))}</td>
+        <td>${escapeHtml(d.end.replaceAll('-', '.'))}</td>
+        <td class="txt-left">${escapeHtml(cContent)}</td>
+        <td>${escapeHtml(fmtPeriod(d.raw.months,d.raw.days))}</td>
+        <td>${rRate}%</td>
+        <td>${escapeHtml(fmtPeriod(d.conv.months,d.conv.days))}</td>
+        <td>${escapeHtml([reviewNote, d.overlapExcluded ? '중복 제외/조정' : ''].filter(Boolean).join(' · '))}</td>
+      </tr>
+    `;
+  });
+  pBody.innerHTML += `
+    <tr data-total="true" style="background:#f9fafb; font-weight:bold;">
+      <td colspan="3">계</td><td></td><td></td><td>${escapeHtml(fmtPeriod(total.months,total.days))}</td><td></td>
+    </tr>
+  `;
+  
+  document.getElementById("pAuthorRank").textContent = inputAuthorRank;
+  document.getElementById("pAuthor").textContent = inputAuthor;
+}
+
+// ══════════════════════════════════════════════════════
+// 스텝 이동
+// ══════════════════════════════════════════════════════
+function goStep(n) {
+  if (n >= 2) {
+    if (!document.getElementById("name").value.trim()) { showAlert("성명을 입력해주세요."); return; }
+    if (!isValidDate(document.getElementById("hireDate").value)) { showAlert("임용일을 YYYY-MM-DD 형식으로 입력해주세요."); return; }
+    if (!state.qual) { showAlert("교원자격증을 선택해주세요."); return; }
+    if (!state.edu) { showAlert("최종 학력을 선택해주세요."); return; }
+  }
+  if (n === 3) {
+    if (!state.careers.length) { showAlert("경력을 1건 이상 입력해주세요.\n경력 종류, 시작일, 종료일이 모두 필요합니다."); return; }
+    const incomplete = state.careers.map((career, index) => {
+      const missing = [];
+      if (!CAREER_TYPES.some(type => type.id === career.type)) missing.push('환산율');
+      if (!isValidDate(career.start)) missing.push('시작일');
+      if (!isValidDate(career.end)) missing.push('종료일');
+      if (isValidDate(career.start) && isValidDate(career.end) && career.start > career.end) missing.push('기간 순서');
+      return missing.length ? `경력 ${index + 1}: ${missing.join('·')} 확인 필요` : '';
+    }).filter(Boolean);
+    if (incomplete.length) {
+      showAlert(`계산 전에 모든 경력의 환산율과 기간을 확인해주세요.\n\n${incomplete.join('\n')}\n\n참고 후보는 증빙을 확인한 뒤 직접 선택하세요. 불필요하거나 빈 경력행은 삭제해주세요.`);
+      return;
+    }
+    renderResult();
+  }
+  [1,2,3].forEach(i=>{
+    document.getElementById("step"+i).style.display = i===n?"":"none";
+    const btn = document.getElementById("stepBtn"+i);
+    btn.className = "step-btn" + (i===n?" active":"") + (i<n?" done":"");
+    const numEl = document.getElementById("stepNum"+i);
+    numEl.textContent = i<n?"✓":i;
+  });
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+
+function setStartMode(mode) {
+  const modes = {
+    document: ['modeDocument', 'documentPanel'],
+    existing: ['modeExisting', 'existingPanel'],
+    manual: ['modeManual', 'manualPanel']
+  };
+  if (!modes[mode]) return;
+  Object.entries(modes).forEach(([key, [buttonId, panelId]]) => {
+    const selected = key === mode;
+    const button = document.getElementById(buttonId);
+    button.classList.toggle('selected', selected);
+    button.setAttribute('aria-pressed', selected ? 'true' : 'false');
+    document.getElementById(panelId).hidden = !selected;
+  });
+  if (mode === 'manual') document.getElementById('manualPanel').scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+function toStep2() {
+  renderCareerList();
+  goStep(2);
+}
+
+function toStep3() {
+  goStep(3);
+}
+
+function resetAll() {
+  if (document.getElementById('btnOcr').disabled || document.getElementById('btnSalaryOcr').disabled) {
+    return showAlert('문서 분석이 끝난 뒤 다시 시작해 주세요. 분석 중인 내용이 새 대상자에게 섞이지 않도록 지금은 초기화할 수 없습니다.');
+  }
+  showConfirm("입력한 내용·선택한 파일·분석 검토표를 모두 초기화할까요?\n저장한 엑셀/PDF와 PC의 원본 파일은 삭제하지 않습니다.", function() {
+    state = {qual:"", edu:"", isSabeom:false, isSpecial:false, careers:[]};
+    ocrReflectedFields = {qual:null, edu:null};
+    careerIdSeq = 1;
+    document.getElementById("name").value="";
+    document.getElementById("hireDate").value="";
+    document.getElementById("eduText").value="";
+    document.getElementById("affiliation").value="";
+    document.getElementById("position").value="";
+    document.getElementById("proposedPosition").value="";
+    document.getElementById("currentGrade").value="";
+    document.getElementById("deductYears").value="";
+    document.getElementById("requiredYears").value="";
+    document.getElementById("author").value="";
+    document.getElementById("authorRank").value="";
+    document.getElementById("isSabeom").checked=false;
+    document.getElementById("isSpecial").checked=false;
+    document.getElementById("ccSabeom").classList.remove("checked");
+    document.getElementById("ccSpecial").classList.remove("checked");
+    document.getElementById("bonusInfo").innerHTML="";
+    document.getElementById('ocrFile').value='';
+    document.getElementById('salaryFile').value='';
+    document.getElementById('ocrStatus').textContent='';
+    document.getElementById('salaryStatus').textContent='';
+    salaryReviewData = {rows:[], documents:[], reference:{}, legal_snapshot:{}};
+    closeSalaryReview();
+    document.getElementById('salaryReviewRows').replaceChildren();
+    document.getElementById('salaryDocBadges').replaceChildren();
+    document.getElementById('salaryReference').replaceChildren();
+    document.getElementById('btnApplySalaryReference').disabled=true;
+    document.querySelectorAll('.date-input').forEach(input => input.classList.remove('valid', 'invalid'));
+    document.getElementById('aiReviewBar').style.display='none';
+    document.getElementById('aiReviewSub').textContent='';
+    renderCareerList();
+    setStartMode('document');
+    initStep1Radios();
+    goStep(1);
+  });
+}
+
+// ══════════════════════════════════════════════════════
+// 출력 및 엑셀 다운로드 (PDF, 진짜 엑셀 생성 기능)
+// ══════════════════════════════════════════════════════
+function collectExportPayload() {
+    const qualification = QUALS.find(q=>q.id===state.qual);
+    const careerTotalCell = document.getElementById("pCareerTotal");
+    const payload = {
+        name: document.getElementById("name").value || "대상자",
+        affiliation: document.getElementById("affiliation").value || "",
+        position: document.getElementById("position").value || "교사",
+        proposedPosition: document.getElementById("proposedPosition").value,
+        qual: qualification?.label || "",
+        edu: document.getElementById("pEduText").textContent,
+        grade: document.getElementById("pGrade").textContent,
+        careerTotal: careerTotalCell.textContent,
+        deductYears: document.getElementById("pDeductYears").textContent,
+        remain: document.getElementById("pRemain").textContent,
+        finalGrade: document.getElementById("pFinalGrade").textContent,
+        requiredYears: document.getElementById("pRequiredYears").textContent,
+        authorRank: document.getElementById("authorRank").value || "",
+        author: document.getElementById("author").value || "",
+        legalBasis: "법령 자료 확인 2026-09-26 · 공무원보수규정 제8조·별표 15·22~26 · 교육부 예규 제97호 · 인사혁신처 예규 제220호",
+        careers: [],
+        total: {Y:careerTotalCell.dataset.years, M:careerTotalCell.dataset.months, D:careerTotalCell.dataset.days}
+    };
+
+    const rows = document.getElementById("pCareerBody").querySelectorAll("tr:not([data-total])");
+    rows.forEach(tr => {
+        const tds = tr.querySelectorAll("td");
+        if (tds.length === 7) {
+            payload.careers.push({
+                start: tds[0].textContent, end: tds[1].textContent,
+                content: tds[2].textContent, rawPeriod: tds[3].textContent,
+                rate: tds[4].textContent, convertedPeriod: tds[5].textContent,
+                note: tds[6].textContent
+            });
+        }
+    });
+
+    return payload;
+}
+
+async function downloadGenerated(endpoint, extension, buttonId) {
+    const payload = collectExportPayload();
+    const btn = document.getElementById(buttonId);
+    const oldText = btn.innerHTML;
+    btn.innerHTML = "⏳ 생성 중...";
+    btn.disabled = true;
+    try {
+        if(IS_TAURI) {
+            const kind = extension === 'xlsx' ? 'excel' : 'pdf';
+            const safeName = String(payload.name || "대상자").replace(/[\\/:*?"<>|]/g, "_");
+            const outputPath = await window.__TAURI__.dialog.save({
+                defaultPath: `호봉획정표_${safeName}.${extension}`,
+                filters: [{ name: extension.toUpperCase(), extensions: [extension] }]
+            });
+            if(!outputPath) return;
+            const savedPath = await invokeDesktop('export_document', { kind, payload, outputPath });
+            showAlert(`${extension.toUpperCase()} 저장 완료\n${savedPath}`);
+            return;
+        }
+        const res = await fetch(OCR_API_BASE_URL + endpoint, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        if(!res.ok) {
+            let message = `${extension.toUpperCase()} 생성 실패`;
+            try {
+                const error = await res.json();
+                message = error.detail || error.error || message;
+            } catch (_) {}
+            throw new Error(message);
+        }
+        const blob = await res.blob();
+        if(!blob.size) throw new Error("생성된 파일이 비어 있습니다.");
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        const safeName = String(payload.name || "대상자").replace(/[\\/:*?"<>|]/g, "_");
+        a.download = `호봉획정표_${safeName}.${extension}`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+    } catch(e) {
+        showAlert(`${extension.toUpperCase()} 생성 오류: ${e.message || String(e)}`);
+    } finally {
+        btn.innerHTML = oldText;
+        btn.disabled = false;
+    }
+}
+
+async function downloadExcel() {
+    await downloadGenerated('/api/export-excel', 'xlsx', 'btnRealExcel');
+}
+
+async function downloadPDF() {
+    await downloadGenerated('/api/export-pdf', 'pdf', 'btnPdf');
+}
+
+// ══════════════════════════════════════════════════════
+// 기존 호봉획정 자료 전용 검토형 가져오기
+// ══════════════════════════════════════════════════════
+function readFileBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error(`${file.name} 파일을 읽지 못했습니다.`));
+    reader.onabort = () => reject(new Error(`${file.name} 파일 읽기가 중단되었습니다.`));
+    reader.onload = () => {
+      const base64 = String(reader.result).split(',')[1];
+      if (!base64) return reject(new Error(`${file.name} 파일이 비어 있거나 읽을 수 없습니다.`));
+      resolve(base64);
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+async function callSalaryDocumentEngine(base64, mimeType) {
+  if(IS_TAURI) return await invokeDesktop('extract_salary_document', {base64, mimeType});
+  const response = await fetch(OCR_API_BASE_URL + '/api/extract-salary', {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({base64, mimeType})
+  });
+  const result = await response.json();
+  if(!response.ok || result.error) throw new Error(result.detail || result.error || "기존 호봉자료 분석 실패");
+  return result;
+}
+
+function mergeSalaryPayloads(payloads) {
+  const rowMap = new Map();
+  const documents = [];
+  const reference = {};
+  let legalSnapshot = {};
+  for(const {fileName, result} of payloads) {
+    if(!Object.keys(legalSnapshot).length && result.legal_snapshot) legalSnapshot = result.legal_snapshot;
+    (result.documents || []).forEach(doc => documents.push({...doc, file_name:fileName}));
+    Object.entries(result.reference || {}).forEach(([key,value]) => {
+      if(reference[key] == null || reference[key] === "") reference[key] = value;
+    });
+    (result.rows || []).forEach(source => {
+      const row = {...source, source_file:fileName};
+      const key = `${row.start || ''}|${row.end || ''}`;
+      if(!rowMap.has(key)) {
+        rowMap.set(key, row);
+        return;
+      }
+      const target = rowMap.get(key);
+      ["organization","position","weeklyHours","recognized_standard_hours","approved_rate_percent","suggested_type","content"].forEach(field => {
+        if((target[field] == null || target[field] === "") && row[field] != null && row[field] !== "") target[field] = row[field];
+      });
+      target.source_labels = [...new Set([...(target.source_labels || [target.source_label]), ...(row.source_labels || [row.source_label])].filter(Boolean))];
+      target.review_reasons = [...new Set([...(target.review_reasons || []), ...(row.review_reasons || [])])];
+      target.candidate_types = [...new Set([...(target.candidate_types || []), ...(row.candidate_types || [])])];
+      if (target.auto_apply === false || row.auto_apply === false) target.auto_apply = false;
+      target.legal_basis = [...new Set([...(target.legal_basis || []), ...(row.legal_basis || [])])];
+      target.required_checks = [...new Set([...(target.required_checks || []), ...(row.required_checks || [])])];
+      if(target.organization && target.position) target.content = `${target.organization} ${target.position}`;
+    });
+  }
+  const rows = [...rowMap.values()].sort((a,b) => String(a.start).localeCompare(String(b.start)) || String(a.end).localeCompare(String(b.end)));
+  rows.forEach((row,index) => {
+    const duplicate = state.careers.some(item => item.start === row.start && item.end === row.end);
+    row.review_id = index;
+    row.ui_status = duplicate ? "duplicate" : ((row.auto_apply === false || row.status === "review" || (row.review_reasons || []).length) ? "review" : "new");
+    row.selected = row.ui_status === "new";
+  });
+  return {rows, documents, reference, legal_snapshot:legalSnapshot};
+}
+
+function referenceEntries(reference) {
+  const labels = {
+    affiliation:"소속", position:"직위", qualification:"교원자격",
+    determination_date:"획정일", determined_step:"획정호봉", prior_step:"종전호봉",
+    base_step:"기산호봉", career_total:"경력합계", converted_total:"환산경력",
+    remaining_period:"잔여기간", next_increment_date:"차기승급일"
+  };
+  return Object.entries(reference || {}).filter(([key,value]) => labels[key] && value !== "" && value != null).map(([key,value]) => [labels[key], key.endsWith("step") ? `${value}호봉` : value]);
+}
+
+function renderSalaryReview() {
+  const review = document.getElementById('salaryReview');
+  review.classList.add('show');
+  document.getElementById('salaryDocBadges').innerHTML = salaryReviewData.documents.map(doc =>
+    `<span class="salary-doc-badge">${escapeHtml(doc.file_name)} · ${doc.page}쪽 ${escapeHtml(doc.label)} · ${doc.row_count || 0}행</span>`
+  ).join('') || '<span class="salary-doc-badge">서식 판별 결과 없음</span>';
+
+  const entries = referenceEntries(salaryReviewData.reference);
+  const reference = document.getElementById('salaryReference');
+  const referenceButton = document.getElementById('btnApplySalaryReference');
+  referenceButton.disabled = !entries.length;
+  if(entries.length) {
+    reference.style.display = 'block';
+    reference.innerHTML = `<div class="salary-reference-title">기존 계산 참고값 · 자동 계산에는 직접 반영되지 않습니다.</div><div class="salary-reference-grid">${entries.map(([label,value]) => `<div><strong>${escapeHtml(label)}</strong> ${escapeHtml(value)}</div>`).join('')}</div>`;
+    referenceButton.style.display = '';
+  } else {
+    reference.style.display = 'none';
+    referenceButton.style.display = 'none';
+  }
+
+  const statusLabel = {new:"신규", review:"원본 확인", duplicate:"기입력"};
+  document.getElementById('salaryReviewRows').innerHTML = salaryReviewData.rows.map((row,index) => {
+    const type = CAREER_TYPES.find(item => item.id === row.suggested_type);
+    const candidateLabels = (row.candidate_types || []).map(id=>CAREER_TYPES.find(item=>item.id===id)?.label).filter(Boolean);
+    const rate = row.weeklyHours ? `주 ${row.weeklyHours}시간` : (row.approved_rate_percent != null ? `기존표 ${row.approved_rate_percent}%` : '유형 확인 필요');
+    const sources = (row.source_labels || [row.source_label]).filter(Boolean).join(' · ');
+    const reason = (row.review_reasons || []).join(' / ');
+    return `<tr class="${row.ui_status}">
+      <td><input class="salary-check" type="checkbox" data-salary-index="${index}" ${row.selected ? 'checked' : ''} ${row.ui_status === 'duplicate' ? 'disabled' : ''}></td>
+      <td style="white-space:nowrap">${escapeHtml(row.start)}<br>~ ${escapeHtml(row.end)}</td>
+      <td>${escapeHtml(row.organization || '확인 필요')}<div class="salary-source">${escapeHtml(sources)}</div></td>
+      <td>${escapeHtml(row.position || '확인 필요')}</td>
+      <td>${row.auto_apply === false ? '<div class="candidate-only-note">증빙 확인 전 참고 후보</div>' : ''}${escapeHtml(type ? type.label : (candidateLabels.length ? `후보: ${candidateLabels.join(' / ')}` : '직접 선택'))}<div class="salary-source">${escapeHtml(rate)}</div></td>
+      <td><span class="salary-status ${row.ui_status}" title="${escapeHtml(reason)}">${statusLabel[row.ui_status]}</span>${reason ? `<div class="salary-source">${escapeHtml(reason)}</div>` : ''}</td>
+    </tr>`;
+  }).join('') || '<tr><td colspan="6" style="text-align:center;padding:24px;color:#b45309">추출된 경력행이 없습니다. 원본 선명도와 서식을 확인해 주세요.</td></tr>';
+  review.scrollIntoView({behavior:'smooth', block:'nearest'});
+}
+
+function closeSalaryReview() {
+  document.getElementById('salaryReview').classList.remove('show');
+}
+
+function selectNewSalaryRows() {
+  document.querySelectorAll('[data-salary-index]').forEach(box => {
+    const row = salaryReviewData.rows[Number(box.dataset.salaryIndex)];
+    box.checked = row.ui_status === 'new';
+  });
+}
+
+function applySalaryReference() {
+  const ref = salaryReviewData.reference || {};
+  if(ref.affiliation) document.getElementById('affiliation').value = ref.affiliation;
+  if(ref.position) document.getElementById('position').value = ref.position;
+  if(ref.determination_date && isValidDate(ref.determination_date)) {
+    document.getElementById('hireDate').value = ref.determination_date;
+    validateDate(document.getElementById('hireDate'));
+  }
+  if(ref.qualification) {
+    const normalized = String(ref.qualification).replace(/[()\s]/g,'');
+    const qual = QUALS.find(item => item.id === normalized || item.label.replace(/[()\s]/g,'') === normalized);
+    if(qual) state.qual = qual.id;
+  }
+  initStep1Radios();
+  showAlert('문서의 소속·직위·획정일·교원자격 중 판독된 값을 기본정보에 반영했습니다. 원본과 꼭 대조해 주세요.');
+}
+
+function applySelectedSalaryRows() {
+  const selected = [...document.querySelectorAll('[data-salary-index]:checked')].map(box => salaryReviewData.rows[Number(box.dataset.salaryIndex)]);
+  if(!selected.length) return showAlert('반영할 경력행을 선택해 주세요.');
+  let applied = 0;
+  selected.forEach(row => {
+    if(state.careers.some(item => item.start === row.start && item.end === row.end)) return;
+    addCareer({
+      content:row.content || [row.organization,row.position].filter(Boolean).join(' '),
+      organization:row.organization || undefined, position:row.position || undefined,
+      start:row.start || '', end:row.end || '', type:row.auto_apply === false ? '' : row.suggested_type || '', inclEnd:true,
+      autoApply:row.auto_apply,
+      weeklyHours:row.weeklyHours || '', aiSuggested:false,
+      generalWeeklyHours:'', aiConfidence:row.confidence || 'mid', aiOriginalType:row.suggested_type || '',
+      candidateTypes:careerCandidateTypes(row), legalBasis:row.legal_basis || [],
+      requiredChecks:row.required_checks || [], recommendationReason:row.recommendation_reason || '',
+      reviewRequired:row.auto_apply === false || row.review_required === true,
+      lawSnapshotDate:row.law_snapshot_date || salaryReviewData.legal_snapshot?.as_of || LAW_SNAPSHOT.asOf
+    });
+    row.ui_status = 'duplicate';
+    row.selected = false;
+    applied++;
+  });
+  renderSalaryReview();
+  if(applied) showAlert(`${applied}개 경력을 경력사항 입력 화면에 반영했습니다. 환산유형과 기간을 원본과 대조해 주세요.`);
+  else showAlert('선택한 기간은 이미 경력사항에 입력되어 있습니다.');
+}
+
+async function analyzeSalaryDocuments() {
+  const input = document.getElementById('salaryFile');
+  const button = document.getElementById('btnSalaryOcr');
+  if (button.disabled) return;
+  const files = [...input.files];
+  if(!files.length) return showAlert('기존 호봉자료 파일을 먼저 선택하세요.');
+  const status = document.getElementById('salaryStatus');
+  button.disabled = true;
+  input.disabled = true;
+  const oldText = button.textContent;
+  button.textContent = '분석 중…';
+  const payloads = [];
+  try {
+    for(let index=0; index<files.length; index++) {
+      const file = files[index];
+      status.innerHTML = `⏳ ${index+1}/${files.length} ${escapeHtml(file.name)} 분석 중…<br><span style="font-size:11px;color:#6b7280;font-weight:400">이 PC의 CPU에서만 처리하며 파일은 외부로 전송되지 않습니다. 문서량과 PC 성능에 따라 수분이 걸릴 수 있습니다.</span>`;
+      const base64 = await readFileBase64(file);
+      const result = await callSalaryDocumentEngine(base64, file.type || (file.name.toLowerCase().endsWith('.pdf') ? 'application/pdf' : 'image/*'));
+      payloads.push({fileName:file.name, result});
+    }
+    salaryReviewData = mergeSalaryPayloads(payloads);
+    renderSalaryReview();
+    const newCount = salaryReviewData.rows.filter(row => row.ui_status === 'new').length;
+    const reviewCount = salaryReviewData.rows.filter(row => row.ui_status === 'review').length;
+    status.innerHTML = `<span style="color:#059669">✅ ${files.length}개 파일에서 ${salaryReviewData.rows.length}개 고유 기간을 찾았습니다.</span> 신규 ${newCount}개 · 원본 확인 ${reviewCount}개<br>아직 경력에 반영되지 않았습니다. 아래 검토표를 원본과 대조하고 체크한 뒤 <strong>선택 항목 반영</strong>을 누르세요.`;
+  } catch(error) {
+    status.innerHTML = `<span style="color:#dc2626">❌ 분석 오류: ${escapeHtml(error.message || String(error))}</span><br>PDF·이미지 형식, 암호, 50MB·30쪽 제한과 선명도를 확인한 뒤 파일을 다시 선택하세요. 기존에 열린 검토표는 이전 분석 결과일 수 있습니다. 필요한 내용은 직접 입력할 수 있습니다.`;
+  } finally {
+    button.disabled = false;
+    input.disabled = false;
+    button.textContent = oldText;
+  }
+}
+
+// ══════════════════════════════════════════════════════
+// 로컬 CPU 파이썬 백엔드에서 문서 추출과 법령 추천을 수행합니다.
+// ══════════════════════════════════════════════════════
+async function extractAllFromOcr() {
+  const fileInput = document.getElementById('ocrFile');
+  const status = document.getElementById('ocrStatus');
+  const button = document.getElementById('btnOcr');
+  if (button.disabled) return;
+
+  if(!fileInput.files[0]) return showAlert("파일을 먼저 선택하세요.");
+
+  button.disabled = true;
+  fileInput.disabled = true;
+  const oldText = button.textContent;
+  button.textContent = '분석 중…';
+  status.innerHTML = "⏳ 인터넷 연결 없이 이 PC의 CPU로 문서를 분석하고 있습니다...<br><span style='font-size:12px; color:#6b7280; font-weight:400'>PDF·이미지 읽기 → 교원자격·학력·근무기간·근무기관·직종 추출 → 결과 정리 순서로 처리합니다.<br>파일은 외부로 전송되지 않으며, 문서량과 PC 성능에 따라 수분이 걸릴 수 있습니다. 완료될 때까지 기다려 주세요.</span>";
+  const file = fileInput.files[0];
+  try {
+      const base64 = await readFileBase64(file);
+      const data = await callLocalDocumentEngine(base64, file.type || (file.name.toLowerCase().endsWith('.pdf') ? 'application/pdf' : 'image/*'));
+      if(data) {
+        const reflected=[];
+        ocrReflectedFields={qual:null,edu:null};
+        
+        // 1. 기본 정보 세팅
+        if(data.basic_info) {
+           let qualVal = data.basic_info.qual;
+           if (qualVal) {
+             qualVal = String(qualVal).replace(/[\(\)\s]/g, '');
+             const matchedQual = QUALS.find(q => q.id === qualVal || q.label.replace(/[\(\)\s]/g, '') === qualVal);
+             if (matchedQual) { state.qual=matchedQual.id;ocrReflectedFields.qual=matchedQual.id;reflected.push(`교원자격증: ${matchedQual.label}`); }
+           }
+           
+           const matchedEdu=EDUS.find(item=>item.id===data.basic_info.edu);
+           if(matchedEdu) { state.edu=matchedEdu.id;ocrReflectedFields.edu=matchedEdu.id;reflected.push(`최종 학력: ${matchedEdu.label}`); }
+           if(data.basic_info.eduText) { document.getElementById('eduText').value=data.basic_info.eduText;reflected.push('출력용 학력'); }
+           if(data.basic_info.isSabeom) { document.getElementById('isSabeom').checked=true;reflected.push('사범계 가산연수 선택'); }
+           if(data.basic_info.isSpecial) { document.getElementById('isSpecial').checked=true;reflected.push('특수학교 가산연수 선택'); }
+           
+           initStep1Radios();
+           renderBonusInfo();
+           highlightOcrSelection('qual');highlightOcrSelection('edu');
+        }
+
+        // 2. 경력사항 세팅
+        let aiMatchCount = 0;
+        if(data.careers && data.careers.length > 0) {
+            data.careers.forEach(item => {
+                let suggestedType = "";
+                let aiConfidence = "low";
+                if(item.suggested_type) {
+                  const matched = CAREER_TYPES.find(t => t.id === item.suggested_type);
+                  if(matched) {
+                    suggestedType = matched.id;
+                    aiConfidence = item.confidence || "mid";
+                  }
+                }
+                const candidateTypes = careerCandidateTypes(item);
+                if(suggestedType || candidateTypes.length) aiMatchCount++;
+                addCareer({
+                    content: item.content || "",
+                    organization: item.organization || undefined,
+                    position: item.position || undefined,
+                    start: item.start || "",
+                    end: item.end || "",
+                    type: item.auto_apply === false ? '' : suggestedType,
+                    autoApply: item.auto_apply,
+                    inclEnd: true,
+                    weeklyHours: item.weeklyHours || "",
+                    generalWeeklyHours: item.generalWeeklyHours || "",
+                    aiSuggested: !!suggestedType && item.auto_apply !== false,
+                    aiConfidence: aiConfidence,
+                    aiOriginalType: suggestedType,
+                    candidateTypes: candidateTypes,
+                    legalBasis: item.legal_basis || [],
+                    requiredChecks: item.required_checks || [],
+                    recommendationReason: item.recommendation_reason || "",
+                    reviewRequired: item.auto_apply === false || item.review_required === true,
+                    lawSnapshotDate: item.law_snapshot_date || data.legal_snapshot?.as_of || LAW_SNAPSHOT.asOf
+                });
+            });
+            
+            if(aiMatchCount > 0) {
+              const bar = document.getElementById("aiReviewBar");
+              if(bar) {
+                bar.style.display = "block";
+                document.getElementById("aiReviewSub").textContent = 
+                  `${data.careers.length}개 경력 중 ${aiMatchCount}개에 현행 법령 기준 후보가 있습니다. 2단계 경력 검토에서 근거와 필수 확인사항을 검토해 주세요.`;
+              }
+            }
+        }
+        
+        const reviewNote = data.review_required ? `<br><span style="color:#d97706">⚠️ 검토 필요: ${escapeHtml((data.review_reasons || []).join(" / "))}</span>` : "";
+         status.innerHTML = ocrCompletionHtml(reflected, data.careers ? data.careers.length : 0, reviewNote);
+      } else {
+        status.innerHTML = "❌ 내용을 추출하지 못했습니다. 원본의 선명도를 확인해 다시 스캔하거나 직접 입력하기로 보완하세요.";
+      }
+    } catch(e) {
+      status.innerHTML = `<span style="color:#dc2626">❌ 분석 오류: ${escapeHtml(e.message || String(e))}</span><br>PDF·이미지 형식, 암호, 50MB·30쪽 제한과 선명도를 확인한 뒤 파일을 다시 선택하세요. 읽히지 않는 내용은 직접 입력하기로 보완할 수 있습니다.`;
+      console.error(e);
+    } finally {
+      button.disabled = false;
+      fileInput.disabled = false;
+      button.textContent = oldText;
+    }
+}
+
+async function callLocalDocumentEngine(base64, mimeType) {
+  if(IS_TAURI) {
+    return await invokeDesktop('extract_document', { base64, mimeType });
+  }
+
+  const res = await fetch(OCR_API_BASE_URL + '/api/extract', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+          base64: base64,
+          mimeType: mimeType
+      })
+  });
+  
+  const result = await res.json();
+  
+  if (result.error) {
+      throw new Error(result.error + (result.detail ? " (" + result.detail + ")" : ""));
+  }
+  
+  return result;
+}
+
+function initLaunchSplash() {
+  const splash = document.getElementById("launchSplash");
+  if (!splash) return;
+  if (!IS_TAURI) {
+    splash.remove();
+    return;
+  }
+
+  const card = splash.querySelector(".splash-card");
+  document.body.classList.add("splash-active");
+  let closed = false;
+  let autoClose;
+
+  const closeSplash = () => {
+    if (closed) return;
+    closed = true;
+    clearTimeout(autoClose);
+    document.removeEventListener("keydown", closeSplash);
+    splash.classList.add("is-leaving");
+    setTimeout(() => {
+      splash.remove();
+      document.body.classList.remove("splash-active");
+    }, 580);
+  };
+
+  splash.addEventListener("click", closeSplash);
+  document.addEventListener("keydown", closeSplash);
+  splash.addEventListener("pointermove", (event) => {
+    if (!card || event.pointerType === "touch") return;
+    const rect = card.getBoundingClientRect();
+    const x = Math.max(0, Math.min(1, (event.clientX - rect.left) / rect.width));
+    const y = Math.max(0, Math.min(1, (event.clientY - rect.top) / rect.height));
+    card.style.setProperty("--tilt-x", `${(0.5 - y) * 5}deg`);
+    card.style.setProperty("--tilt-y", `${(x - 0.5) * 7}deg`);
+  });
+  splash.addEventListener("pointerleave", () => {
+    if (!card) return;
+    card.style.setProperty("--tilt-x", "0deg");
+    card.style.setProperty("--tilt-y", "0deg");
+  });
+  autoClose = setTimeout(closeSplash, 3500);
+}
+
+// 초기화
+window.onload = () => {
+  initAssistant();
+  initLaunchSplash();
+  initStep1Radios();
+  renderCareerList();
+  renderBonusInfo();
+  document.getElementById("isSabeom").addEventListener("change", renderBonusInfo);
+  document.getElementById("isSpecial").addEventListener("change", renderBonusInfo);
+  document.getElementById("hireDate").addEventListener("input", function(){ maskDate(this); });
+  document.getElementById("hireDate").addEventListener("blur", function(){ validateDate(this); });
+};
+</script>
+</body>
+</html>
